@@ -5,4 +5,6 @@
 !.gitignore
 !.zshrc
 !Microsoft.PowerShell_profile.ps1
+!.vimrc
+!jamyao.zsh-theme
 

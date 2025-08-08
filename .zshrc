@@ -8,7 +8,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="robbyrussell"
+ZSH_THEME="jamyao"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -38,7 +38,7 @@ ZSH_THEME="robbyrussell"
 # DISABLE_LS_COLORS="true"
 
 # Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
+DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
 # ENABLE_CORRECTION="true"
@@ -70,7 +70,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(zsh-autosuggestions)
+plugins=(git zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -105,20 +105,30 @@ source $ZSH/oh-my-zsh.sh
 
 PATH="/home/jamyao/.local/bin:$PATH"
 zoxide --version > /dev/null
-if [ $? -eq 127 ] ; then
+if [ $? -eq 127 ]; then
     curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+fi
+eval "$(zoxide init --cmd cd zsh)"
+
+PATH="/home/jamyao/.fzf/bin/:$PATH"
+which fzf > /dev/null 2>&1
+if [ $? -ne 0 ]; then
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install
-    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 fi
-
-eval "$(zoxide init --cmd cd zsh)"
 source <(fzf --zsh)
 
 
 # Edge ENV
 
-DEPOT_TOOLS_PATH="/workspace/edge/depot_tools"
-PATH="$DEPOT_TOOLS_PATH:$DEPOT_TOOL_PATH/scripts:$PATH"
+OLD_PATH="$PATH"
+
+DEPOT_TOOLS_PATH="~/edge/depot_tools"
+PATH1="$DEPOT_TOOLS_PATH:$DEPOT_TOOLS_PATH/scripts:$OLD_PATH"
+
+DEPOT_TOOLS_PATH2="~/edge2/depot_tools"
+PATH2="$DEPOT_TOOLS_PATH2:$DEPOT_TOOLS_PATH2/scripts:$OLD_PATH"
+
+PATH="$PATH1"
 
 #cd /workspace/edge/src
