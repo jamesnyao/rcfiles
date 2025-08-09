@@ -38,7 +38,7 @@ ZSH_THEME="jamyao"
 # DISABLE_LS_COLORS="true"
 
 # Uncomment the following line to disable auto-setting terminal title.
-DISABLE_AUTO_TITLE="true"
+# DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
 # ENABLE_CORRECTION="true"
@@ -123,12 +123,12 @@ source <(fzf --zsh)
 
 OLD_PATH="$PATH"
 
-DEPOT_TOOLS_PATH="~/edge/depot_tools"
+DEPOT_TOOLS_PATH="/workspace/edge/depot_tools"
 PATH1="$DEPOT_TOOLS_PATH:$DEPOT_TOOLS_PATH/scripts:$OLD_PATH"
 
-DEPOT_TOOLS_PATH2="~/edge2/depot_tools"
+DEPOT_TOOLS_PATH2="/workspace/edge2/depot_tools"
 PATH2="$DEPOT_TOOLS_PATH2:$DEPOT_TOOLS_PATH2/scripts:$OLD_PATH"
 
 PATH="$PATH1"
 
-#cd /workspace/edge/src
+cd /workspace/edge/src
