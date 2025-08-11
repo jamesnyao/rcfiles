@@ -82,13 +82,13 @@ function Set-RemoteOnly() {
 }
 
 function Set-DevRE() {
-  $env:REAPI_CAS_ADDRESS = "redacted.westus3.cloudapp.azure.com:443"
-  $env:REAPI_ADDRESS = "redacted.westus3.cloudapp.azure.com:443"
+  $env:REAPI_CAS_ADDRESS = "rbecasdev.westus3.cloudapp.azure.com:443"
+  $env:REAPI_ADDRESS = "rbedev.westus3.cloudapp.azure.com:443"
 }
 
 function Set-ProdRE() {
-  $env:REAPI_CAS_ADDRESS = "redacted.westus.cloudapp.azure.com:443"
-  $env:REAPI_ADDRESS = "redacted.westus.cloudapp.azure.com:443"
+  $env:REAPI_CAS_ADDRESS = "rbecasprod.westus.cloudapp.azure.com:443"
+  $env:REAPI_ADDRESS = "rbeprod.westus.cloudapp.azure.com:443"
 }
 
 function Set-Clean() {

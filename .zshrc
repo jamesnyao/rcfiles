@@ -133,4 +133,20 @@ PATH2="$DEPOT_TOOLS_PATH2:$DEPOT_TOOLS_PATH2/scripts:$OLD_PATH"
 
 PATH="$PATH1"
 
+
+set_re_dev() {
+  export REAPI_ADDRESS="rbedev.westus3.cloudapp.azure.com:443"
+  export REAPI_CAS_ADDRESS="rbecasdev.westus3.cloudapp.azure.com:443"
+}
+
+set_re_prod() {
+  export REAPI_ADDRESS="rbeprod.westus.cloudapp.azure.com:443"
+  export REAPI_CAS_ADDRESS="rbecasprod.westus.cloudapp.azure.com:443"
+}
+
+set_remote_only() {
+  export SISO_LIMITS="fastlocal=0"
+  export SISO_EXPERIMENTS="no_fallback"
+}
+
 cd /workspace/edge/src
