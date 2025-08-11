@@ -146,7 +146,7 @@ set_re_prod() {
 
 set_remote_only() {
   export SISO_LIMITS="fastlocal=0"
-  export SISO_EXPERIMENTS="no_fallback"
+  export SISO_EXPERIMENTS="no-fallback"
 }
 
 cd /workspace/edge/src
