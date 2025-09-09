@@ -4,7 +4,7 @@
 # But not these files...
 !.gitignore
 !.zshrc
-!OneDrive - Microsoft\Documents\PowerShell\Microsoft.PowerShell_profile.ps1
+!"OneDrive - Microsoft/Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
 !.vimrc
 !jamyao.zsh-theme
 
