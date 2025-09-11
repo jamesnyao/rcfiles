@@ -1,14 +1,16 @@
 # Ignore everything
 *
 
+# Allow these
+!.gitignore
+!.zshrc
+!.vimrc
+!jamyao.zsh-theme
+
 # Un-ignore the parent dirs
 !OneDrive - Microsoft/
 !OneDrive - Microsoft/Documents/
 !OneDrive - Microsoft/Documents/PowerShell/
 
-# But not these files...
-!.gitignore
-!.zshrc
+# Finally, un-ignore the file
 !OneDrive - Microsoft/Documents/PowerShell/Microsoft.PowerShell_profile.ps1
-!.vimrc
-!jamyao.zsh-theme
