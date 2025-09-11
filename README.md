@@ -1,2 +1,0 @@
-# rcfiles
-rc files
