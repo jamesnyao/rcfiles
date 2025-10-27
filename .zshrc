@@ -103,7 +103,8 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-PATH="/home/jamyao/.local/bin:$PATH"
+PATH="/home/jamyao/.local/bin:/usr/local/go/bin:$PATH"
+
 zoxide --version > /dev/null
 if [ $? -eq 127 ]; then
     curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
