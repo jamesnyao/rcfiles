@@ -90,12 +90,16 @@ function Set-SisoPath() {
 function Set-RemoteOnly() {
   $env:SISO_LIMITS = "fastlocal=0,startlocal=0"
   $env:SISO_EXPERIMENTS = "no-fallback"
-  #$env:REAPI_CAS_ADDRESS = ""
 }
 
 function Set-DevRE() {
   $env:REAPI_CAS_ADDRESS = "rbecasdev.westus3.cloudapp.azure.com:443"
   $env:REAPI_ADDRESS = "rbedev.westus3.cloudapp.azure.com:443"
+}
+
+function Set-StagingRE() {
+  $env:REAPI_CAS_ADDRESS = "rbecasstaging.westus3.cloudapp.azure.com:443"
+  $env:REAPI_ADDRESS = "rbestaging.westus3.cloudapp.azure.com:443"
 }
 
 function Set-ProdRE() {
