@@ -1,6 +1,9 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
+# Set up uname platform
+platform=$(uname | tr '[:upper:]' '[:lower:]')
+
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -8,6 +11,8 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+ZSH_THEME_PLATFORM="$platform"
+cp $HOME/jamyao.zsh-theme $ZSH/themes/jamyao.zsh-theme
 ZSH_THEME="jamyao"
 
 # Set list of themes to pick from when loading at random
@@ -103,33 +108,42 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-PATH="/home/jamyao/.local/bin:/usr/local/go/bin:$PATH"
+platform=$(uname | tr '[:upper:]' '[:lower:]')
+if [[ "$platform" == "linux" ]]; then
+  PATH="/home/jamyao/.local/bin:/usr/local/go/bin:$PATH"
 
-zoxide --version > /dev/null
-if [ $? -eq 127 ]; then
+  zoxide --version > /dev/null
+  if [ $? -eq 127 ]; then
     curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
-fi
-eval "$(zoxide init --cmd cd zsh)"
+  fi
+  eval "$(zoxide init --cmd cd zsh)"
 
-PATH="/home/jamyao/.fzf/bin/:$PATH"
-which fzf > /dev/null 2>&1
-if [ $? -ne 0 ]; then
+  PATH="/home/jamyao/.fzf/bin/:$PATH"
+  which fzf > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install
+  fi
+  source <(fzf --zsh)
 fi
-source <(fzf --zsh)
 
-title "jamyao-dev-linux"
+title "jamyao-dev-$platform"
 
 
 # Edge ENV
 
 OLD_PATH="$PATH"
 
-DEPOT_TOOLS_PATH="/workspace/edge/depot_tools"
-PATH1="$DEPOT_TOOLS_PATH:$DEPOT_TOOLS_PATH/scripts:$OLD_PATH"
+if [[ "$platform" == "linux" ]]; then
+  ENLIST_BASE="/workspace"
+elif [[ "$platform" == "darwin" ]]; then
+  ENLIST_BASE="$HOME"
+fi
 
-DEPOT_TOOLS_PATH2="/workspace/edge2/depot_tools"
+DEPOT_TOOLS_PATH="$ENLIST_BASE/edge/depot_tools"
+DEPOT_TOOLS_PATH2="$ENLIST_BASE/edge2/depot_tools"
+
+PATH1="$DEPOT_TOOLS_PATH:$DEPOT_TOOLS_PATH/scripts:$OLD_PATH"
 PATH2="$DEPOT_TOOLS_PATH2:$DEPOT_TOOLS_PATH2/scripts:$OLD_PATH"
 
 PATH="$PATH1"
@@ -150,4 +164,6 @@ set_remote_only() {
   export SISO_EXPERIMENTS="no-fallback"
 }
 
-cd /workspace/edge/src
+cd $ENLIST_BASE/edge/src
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
