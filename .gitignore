@@ -7,10 +7,11 @@
 !.vimrc
 !jamyao.zsh-theme
 
-# Un-ignore the parent dirs
+!scripts/
+!scripts/python3.cmd
+!scripts/salt_chromium_src.py
+
 !OneDrive - Microsoft/
 !OneDrive - Microsoft/Documents/
 !OneDrive - Microsoft/Documents/PowerShell/
-
-# Finally, un-ignore the file
 !OneDrive - Microsoft/Documents/PowerShell/Microsoft.PowerShell_profile.ps1

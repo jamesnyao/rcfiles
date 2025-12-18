@@ -45,10 +45,12 @@ elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
 }
 $env:DEPOT_TOOLS_PREVIEW_RING = 1
 
+$env:PATH_PREFIX="C:\Users\jamyao\scripts"
+
 function Set-Downstream() {
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:DownEnlistRoot\depot_tools"
-  $env:PATH = "$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
+  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
   #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
   $env:REPROXY_CFG = "$env:DownEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:DownEnlistRoot\src"
@@ -58,7 +60,7 @@ function Set-Downstream() {
 function Set-Upstream() {
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:UpEnlistRoot\depot_tools"
-  $env:PATH = "$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
+  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
   #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
   $env:REPROXY_CFG = "$env:UpEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:UpEnlistRoot\src"
@@ -68,7 +70,7 @@ function Set-Upstream() {
 function Set-Internal() {
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:Dev\depot_tools"
-  $env:PATH = "$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
+  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
   Set-Location $env:Dev
   Write-Output "Depot Tools set up for $env:Dev"
 }
@@ -76,7 +78,7 @@ function Set-Internal() {
 function Set-CrDT() {
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:Dev\depot_tools.cr"
-  $env:PATH = "$env:DEPOT_TOOLS_PATH;$env:PATH_BASE"
+  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:PATH_BASE"
   $env:SISO_PATH = "$env:Dev\infra\go\src\infra\build\siso\siso"
   #Set-Location "$env:Dev\infra"
   Write-Output "Depot Tools set up for $env:Dev"
@@ -110,7 +112,7 @@ function Set-ProdRE() {
 function Set-Clean() {
   # No depot_tools
   $env:DEPOT_TOOLS_PATH = ""
-  $env:PATH = $env:PATH_BASE
+  $env:PATH = "$env:PATH_PREFIX;$env:PATH_BASE"
   $env:SISO_LIMITS = ""
   $env:SISO_PATH = ""
   $env:SISO_EXPERIMENTS = ""
@@ -123,6 +125,8 @@ if ($env:MachineType -eq "dev-cloud") {
 else {
 
 }
+
+
 
 #Set-Clean
 Set-Internal
