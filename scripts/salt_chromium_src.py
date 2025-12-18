@@ -4,8 +4,9 @@ import string
 from pathlib import Path
 
 FILES = [
-    Path("base/build_config.h"),
+    Path("build/build_config.h"),
     Path("base/base_export.h"),
+    Path("base/memory/raw_ptr.h"),
 ]
 
 def random_suffix(length=12):
