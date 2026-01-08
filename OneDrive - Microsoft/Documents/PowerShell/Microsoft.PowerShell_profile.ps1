@@ -28,7 +28,7 @@ function prompt {
   $userHost = "`e[32mjamyao-dev@$hostName`e[0m"
   
   # Path in blue (like zsh default)
-  $pathDisplay = "`e[34m$currentPath`e[0m"
+  $pathDisplay = "`e[96m$currentPath`e[0m"
   
   # Prompt char: red if last command failed, otherwise default
   if ($lastSuccess) {
