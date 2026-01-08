@@ -99,6 +99,12 @@ function Set-DevRE() {
   $env:REAPI_ADDRESS = "rbedev.westus3.cloudapp.azure.com:443"
 }
 
+function Set-DevRemoteOnly() {
+  Set-DevRE
+  Set-RemoteOnly
+  $env:SISO_LIMITS = "fastlocal=0,startlocal=0,remote=18"
+}
+
 function Set-StagingRE() {
   $env:REAPI_CAS_ADDRESS = "rbecasstaging.westus3.cloudapp.azure.com:443"
   $env:REAPI_ADDRESS = "rbestaging.westus3.cloudapp.azure.com:443"
