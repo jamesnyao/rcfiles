@@ -37,7 +37,7 @@ function prompt {
     $promptChar = "`e[31m$ `e[0m"
   }
   
-  return "$userHost $pathDisplay$gitBranch`n$promptChar"
+  return "$userHost $pathDisplay$gitBranch $promptChar"
 }
 
 
