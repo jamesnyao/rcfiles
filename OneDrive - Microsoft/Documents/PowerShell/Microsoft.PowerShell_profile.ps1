@@ -1,4 +1,45 @@
 # oh-my-posh init pwsh | Invoke-Expression
+# ZSH-style colored prompt
+function prompt {
+  $lastSuccess = $?
+  $currentPath = (Get-Location).Path
+  
+  # Get git branch if in a git repo
+  $gitBranch = ""
+  try {
+    $branch = git branch --show-current 2>$null
+    if ($branch) {
+      $gitBranch = " `e[33m($branch)`e[0m"
+    }
+  } catch {}
+  
+  # Custom machine name
+  if ($env:COMPUTERNAME -like "CPC-jamya*") {
+    $hostName = "devbox"
+  } elseif ($env:COMPUTERNAME -eq "JAMYAO-DEV") {
+    $hostName = "devbox"
+  } elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
+    $hostName = "surface"
+  } else {
+    $hostName = $env:COMPUTERNAME.ToLower()
+  }
+  
+  # User@Host in green (like zsh default)
+  $userHost = "`e[32mjamyao-dev@$hostName`e[0m"
+  
+  # Path in blue (like zsh default)
+  $pathDisplay = "`e[34m$currentPath`e[0m"
+  
+  # Prompt char: red if last command failed, otherwise default
+  if ($lastSuccess) {
+    $promptChar = "`e[0m$ "
+  } else {
+    $promptChar = "`e[31m$ `e[0m"
+  }
+  
+  return "$userHost $pathDisplay$gitBranch`n$promptChar"
+}
+
 
 # Check if choco is installed
 if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
