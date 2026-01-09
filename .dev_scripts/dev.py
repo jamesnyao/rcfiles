@@ -46,7 +46,7 @@ def load_config():
             'defaultBasePaths': {
                 'linux': '/workspace',
                 'darwin': '/workspace',
-                'windows': '/dev'
+                'windows': 'C:\\dev'
             },
             'repos': []
         }
@@ -540,15 +540,15 @@ def cmd_repo_scan(args):
     return 0
 
 def cmd_repo_set_path(args):
-    """Set base path for an OS"""
-    if args.os not in ('linux', 'darwin', 'windows'):
-        print(f"{Colors.RED}[X]{Colors.NC} OS must be linux, darwin, or windows")
+    """Set base path for a platform"""
+    if args.platform not in ('linux', 'darwin', 'win-surface', 'win-devbox'):
+        print(f"{Colors.RED}[X]{Colors.NC} platform must be linux, darwin, win-surface, win-devbox")
         return 1
 
     config = load_config()
-    config['defaultBasePaths'][args.os] = args.path
+    config['defaultBasePaths'][args.platform] = args.path
     save_config(config)
-    print(f"{Colors.GREEN}Set {args.os} base path to: {args.path}{Colors.NC}")
+    print(f"{Colors.GREEN}Set {args.platform} base path to: {args.path}{Colors.NC}")
     return 0
 
 
@@ -713,8 +713,8 @@ def main():
     scan_p = repo_sub.add_parser('scan', help='Scan and add all git repos')
     scan_p.add_argument('path', nargs='?', help='Path to scan')
 
-    setpath_p = repo_sub.add_parser('set-path', help='Set base path for an OS')
-    setpath_p.add_argument('os', help='OS (linux/darwin/windows)')
+    setpath_p = repo_sub.add_parser('set-path', help='Set base path for a platform')
+    setpath_p.add_argument('platform', help='platform (linux/darwin/win-surface/win-devbox)')
     setpath_p.add_argument('path', help='Base path')
 
 
