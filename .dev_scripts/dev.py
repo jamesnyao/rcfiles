@@ -46,7 +46,7 @@ def load_config():
             'defaultBasePaths': {
                 'linux': '/workspace',
                 'darwin': '/workspace',
-                'windows': 'C:\\dev'
+                'windows': '/dev'
             },
             'repos': []
         }
