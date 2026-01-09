@@ -4,6 +4,10 @@ This workspace contains multiple repositories for Microsoft Edge infrastructure 
 Update this file with any relavant information that would help Copilot provide better suggestions.
 Review any deletions to this file - unless the information is no longer accurate.
 
+## Critical Rules
+
+**NEVER interrupt a running build unless explicitly asked or there are actual errors.** When a build is in progress and has not generated errors, let it complete. Build interruptions waste significant time and resources.
+
 ## Repository Structure
 
 ### `/workspace/edge/src` - Chromium Source (chromium.src)
