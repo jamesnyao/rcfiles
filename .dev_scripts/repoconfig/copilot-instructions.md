@@ -102,7 +102,6 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
 - Bicep templates: `template-<resource-type>.bicep`
 - PowerShell scripts: `Verb-Noun.ps1` (e.g., `Deploy-AzureResources.ps1`)
 
-<<<<<<< repoconfig
 ## Quick Reference
 
 | Task | Location |
@@ -129,60 +128,7 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
     ├── repos.json              # Tracked repos config
     └── copilot-instructions.md # Synced copilot instructions
 ```
-<<<<<<< repoconfig
-<<<<<<< repoconfig
-<<<<<<< repoconfig
-<<<<<<< repoconfig
-<<<<<<< repoconfig
-<<<<<<< repoconfig
-=======
-## Quick Reference
 
-| Task | Location |
-|------|----------|
-| iOS pipeline issues | `edge/src/anaheim/pipelines/templates/ios-*.yml` |
-| RE/Build infrastructure | `es/RE/` |
-| iOS entitlements | `edge/src/ios/chrome/*/entitlements/` |
-| Build flags | `edge/src/ios/build/chrome_build.gni` |
-| Azure resources | `es/RE/AzureTemplates/*.bicep` |
-| Dev CLI scripts | `~/.dev_scripts/dev.py` |
-| Repo tracking config | `~/.dev_scripts/repoconfig/repos.json` |
-| Copilot instructions sync | `~/.dev_scripts/repoconfig/copilot-instructions.md` |
-
-### Dev Scripts Structure
-
-```
-~/.dev_scripts/
-â”œâ”€â”€ dev.py              # Main CLI (cross-platform)
-â”œâ”€â”€ dev                 # Linux launcher (bash)
-â”œâ”€â”€ aliases.sh          # Linux/macOS shell functions
-â”œâ”€â”€ python3             # Linux python shim (bash)
-â”œâ”€â”€ python3.cmd         # Windows python shim (batch)
-â””â”€â”€ repoconfig/
-    â”œâ”€â”€ repos.json              # Tracked repos config
-    â””â”€â”€ copilot-instructions.md # Synced copilot instructions
-```
->>>>>>> workspace
-
-<<<<<<< repoconfig
-=======
-
->>>>>>> workspace
-=======
-
->>>>>>> workspace
-=======
-
->>>>>>> workspace
-=======
-
->>>>>>> workspace
-=======
-
->>>>>>> workspace
-=======
-
->>>>>>> workspace
 ## Dev CLI (`dev` command)
 
 A cross-platform development workflow tool for managing repositories across machines. Located at `~/.dev_scripts/dev.py`.
@@ -254,79 +200,6 @@ dev python update
 ```
 
 On Windows uses winget, on macOS uses Homebrew, on Linux uses apt/dnf.
-=======
-## Dev CLI (`dev` command)
-
-A cross-platform development workflow tool for managing repositories across machines. Located at `~/.dev_scripts/dev.py`.
-
-### Repository Management
-
-```bash
-# Add a repository to tracking
-dev repo add <path>              # e.g., dev repo add edge/src
-
-# Nested repos in gclient enlistments are auto-detected
-dev repo add edge/src            # â†’ tracked as "edge/src"
-dev repo add cr/depot_tools      # â†’ tracked as "cr/depot_tools"
-
-# List all tracked repositories
-dev repo list
-
-# Check which repos exist on this machine
-dev repo status
-
-# Clone missing repositories to the base path
-dev repo sync
-
-# Scan a directory and add all git repos (including nested ones in gclient enlistments)
-dev repo scan [path]
-
-# Remove a repository from tracking
-dev repo remove <name>
-
-# Set base path for an OS
-dev repo set-path <os> <path>    # os: linux, darwin, windows
-```
-
-### Repository Naming
-
-- Top-level repos use their folder name: `sealion`, `releasebot`, `es`
-- Repos inside gclient enlistments (`.gclient` present) use `parent/name` format:
-  - `edge/src` - Edge chromium source
-  - `cr/src` - Upstream Chromium source  
-  - `cr/depot_tools` - Chromium depot_tools
-
-### Tracked Repositories
-
-| Name | Description |
-|------|-------------|
-| `edge/src` | Edge Chromium source (main enlistment) |
-| `cr/src` | Upstream Chromium source |
-| `cr/depot_tools` | Chromium depot_tools |
-| `es` | Edge Engineering Systems |
-| `sealion` | Build pipeline pool management |
-| `releasebot` | Release automation |
-
-### Cross-Machine Sync
-
-The config is stored in `~/.dev_scripts/repoconfig/repos.json` and can be synced across machines. Running `dev repo sync` on a new machine will clone all tracked repos.
-
-Default base paths by OS:
-- **Linux**: `/workspace`
-- **macOS**: `/workspace`
-- **Windows**: `Q:\dev`
-
-Use `dev repo set-path <os> <path>` to customize.
-
-### Python Management
-
-```bash
-# Update Python to latest stable version (cross-platform)
-dev python update
-```
-
-On Windows uses winget, on macOS uses Homebrew, on Linux uses apt/dnf.
->>>>>>> workspace
 
 ## Shell Setup
 
@@ -356,7 +229,6 @@ Functions defined in `$PROFILE`:
 
 The python shim (`~/.dev_scripts/python3.cmd`) skips depot_tools\scripts and Windows Store stubs.
 
-<<<<<<< repoconfig
 ## PowerShell Terminal Guidelines
 
 ### CRITICAL: Never Source Profile
@@ -365,17 +237,3 @@ The python shim (`~/.dev_scripts/python3.cmd`) skips depot_tools\scripts and Win
 Instead, if you need to update a function or alias after modifying the profile:
 - Define the function/alias directly in the current session
 - Example: `function dev { python3 "$env:USERPROFILE\.dev_scripts\dev.py" @args }`
-sync test marker
-=======
-## PowerShell Terminal Guidelines
-
-### CRITICAL: Never Source Profile
-**NEVER** run `. $PROFILE` or `Import-Module` commands that wait for user input in the terminal. This will freeze Copilot chat indefinitely since it waits for a return value that never appears.
-
-Instead, if you need to update a function or alias after modifying the profile:
-- Define the function/alias directly in the current session
-- Example: `function dev { python3 "$env:USERPROFILE\.dev_scripts\dev.py" @args }`
-sync test marker
->>>>>>> C:\Users\jamyao\AppData\Local\Temp\tmpv3aa5bzp\repoconfig.md
->>>>>>> workspace
-
