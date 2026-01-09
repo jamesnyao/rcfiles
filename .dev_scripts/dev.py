@@ -38,20 +38,6 @@ def get_os_type():
     return 'linux'
 
 def load_config():
-    if not CONFIG_FILE.exists():
-        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-        config = {
-            'version': 1,
-            'description': 'Tracked repositories for cross-machine sync',
-            'defaultBasePaths': {
-                'linux': '/workspace',
-                'darwin': '/workspace',
-                'windows': 'C:\\dev'
-            },
-            'repos': []
-        }
-        save_config(config)
-        return config
     with open(CONFIG_FILE, 'r') as f:
         return json.load(f)
 
@@ -61,7 +47,7 @@ def save_config(config):
         json.dump(config, f, indent=2)
 
 def get_base_path(config):
-    return config['defaultBasePaths'].get(get_os_type(), '/workspace')
+    return config['defaultBasePaths'].get(os.getenv('DEVCONFIG'))
 
 def run_git(repo_path, *args):
     """Run git command and return output"""
@@ -500,65 +486,12 @@ def cmd_repo_status(args):
     print(f"Present: {Colors.GREEN}{present}{Colors.NC} | Missing: {Colors.RED}{missing}{Colors.NC}")
     return 0
 
-def cmd_repo_scan(args):
-    """Scan directory and add all git repos, including nested ones in enlistments"""
-    config = load_config()
-    scan_path = Path(args.path) if args.path else Path(get_base_path(config))
-
-    print(f"{Colors.BLUE}Scanning for git repositories in: {scan_path}{Colors.NC}")
-    print("-" * 60)
-
-    added = 0
-    
-    def add_repo(path):
-        nonlocal added
-        print(f"Found: {path}")
-        class AddArgs:
-            pass
-        add_args = AddArgs()
-        add_args.path = str(path)
-        cmd_repo_add(add_args)
-        added += 1
-    
-    for entry in scan_path.iterdir():
-        if not entry.is_dir():
-            continue
-            
-        if (entry / '.git').exists():
-            # Top-level git repo
-            add_repo(entry)
-        elif (entry / '.gclient').exists():
-            # This is a gclient enlistment, only track src and depot_tools
-            print(f"{Colors.CYAN}Found enlistment: {entry.name}{Colors.NC}")
-            for subname in ['src', 'depot_tools']:
-                subentry = entry / subname
-                if subentry.is_dir() and (subentry / '.git').exists():
-                    add_repo(subentry)
-
-    print("-" * 60)
-    print(f"Added {Colors.GREEN}{added}{Colors.NC} repositories")
-    return 0
-
-def cmd_repo_set_path(args):
-    """Set base path for a platform"""
-    if args.platform not in ('linux', 'darwin', 'win-surface', 'win-devbox'):
-        print(f"{Colors.RED}[X]{Colors.NC} platform must be linux, darwin, win-surface, win-devbox")
-        return 1
-
-    config = load_config()
-    config['defaultBasePaths'][args.platform] = args.path
-    save_config(config)
-    print(f"{Colors.GREEN}Set {args.platform} base path to: {args.path}{Colors.NC}")
-    return 0
-
 
 # ============ PYTHON COMMANDS ============
 
 def get_python_command():
     """Get the Python command for this platform"""
-    if get_os_type() == 'windows':
-        return ['py']
-    return ['python3']
+    return "./python3"
 
 def get_current_python_version():
     """Get the currently installed Python version"""
@@ -762,8 +695,6 @@ def main():
             'list': cmd_repo_list,
             'sync': cmd_repo_sync,
             'status': cmd_repo_status,
-            'scan': cmd_repo_scan,
-            'set-path': cmd_repo_set_path,
         }
         if args.repo_command in cmd_map:
             return cmd_map[args.repo_command](args)

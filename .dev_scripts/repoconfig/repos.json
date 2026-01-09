@@ -2,9 +2,9 @@
   "version": 1,
   "description": "Tracked repositories for cross-machine sync",
   "defaultBasePaths": {
-    "linux": "/workspace",
-    "darwin": "/workspace",
-    "windows": "Q:\\dev",
+    "linux-devbox": "/workspace",
+    "mac-devbox": "/dev",
+    "win-devbox": "Q:\\dev",
     "win-surface": "C:\\dev"
   },
   "repos": [

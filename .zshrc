@@ -129,6 +129,7 @@ fi
 
 title "jamyao-dev-$platform"
 
+export DEVCONFIG="linux-devbox"
 
 # Edge ENV
 

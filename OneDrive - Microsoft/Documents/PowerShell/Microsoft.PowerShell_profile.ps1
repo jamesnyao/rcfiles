@@ -23,6 +23,9 @@ function prompt {
   } else {
     $hostName = $env:COMPUTERNAME.ToLower()
   }
+
+  # Dev config
+  $env:DEVCONFIG = "win-$hostname"
   
   # User@Host in green (like zsh default)
   $userHost = "`e[32mjamyao-dev@$hostName`e[0m"
