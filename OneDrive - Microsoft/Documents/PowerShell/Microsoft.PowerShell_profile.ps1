@@ -81,8 +81,8 @@ elseif ($env:COMPUTERNAME -eq "JAMYAO-DEV") {
 elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
   $env:MachineType = "dev"
   $env:Dev = "C:\dev"
-  $env:DownEnlistRoot = "C:\edge"
-  $env:UpEnlistRoot = "C:\cr"
+  $env:DownEnlistRoot = "C:\dev\edge"
+  $env:UpEnlistRoot = "C:\dev\cr"
 }
 $env:DEPOT_TOOLS_PREVIEW_RING = 1
 
