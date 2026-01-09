@@ -402,7 +402,7 @@ def apply_copilot_instructions_to_workspace(base_path):
     
     if has_src_conflicts or has_dest_conflicts:
         print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
-        print("  Conflict markers in ~/.github/copilot-instructions.md")
+        print(f"  Conflict markers in {copilot_src}")
         print("  Use Copilot to resolve, then run 'dev repo sync' again")
         return
     
@@ -463,10 +463,10 @@ def sync_copilot_instructions(base_path):
         return
     
     if merged_content is not None and has_conflicts:
-        # Merge has conflicts - write to workspace with markers for Copilot to resolve
-        copilot_dest.write_text(merged_content, encoding='utf-8')
+        # Merge has conflicts - write to repoconfig with markers for Copilot to resolve
+        copilot_src.write_text(merged_content, encoding='utf-8')
         print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
-        print("  Conflict markers written to .github/copilot-instructions.md")
+        print(f"  Conflict markers in {copilot_src}")
         print("  Use Copilot to resolve, then run 'dev repo sync' again")
         return
 
@@ -478,9 +478,9 @@ def sync_copilot_instructions(base_path):
         copilot_dest.write_text(merged_content, encoding='utf-8')
         print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions auto-merged (section-based)")
     else:
-        copilot_dest.write_text(merged_content, encoding='utf-8')
+        copilot_src.write_text(merged_content, encoding='utf-8')
         print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
-        print("  Conflict markers written to .github/copilot-instructions.md")
+        print(f"  Conflict markers in {copilot_src}")
         print("  Use Copilot to resolve, then run 'dev repo sync' again")
 
 
