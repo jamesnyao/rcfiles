@@ -402,7 +402,7 @@ def apply_copilot_instructions_to_workspace(base_path):
     
     if has_src_conflicts or has_dest_conflicts:
         print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
-        print("  Conflict markers in .github/copilot-instructions.md")
+        print("  Conflict markers in ~/.dev_scripts/repoconfig/copilot-instructions.md")
         print("  Use Copilot to resolve, then run 'dev repo sync' again")
         return
     

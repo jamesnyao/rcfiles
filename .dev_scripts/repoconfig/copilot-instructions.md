@@ -139,6 +139,7 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
     └── copilot-instructions.md # Synced copilot instructions
 ```
 <<<<<<< repoconfig
+<<<<<<< repoconfig
 =======
 ## Quick Reference
 
@@ -169,6 +170,9 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
 >>>>>>> workspace
 
 <<<<<<< repoconfig
+=======
+
+>>>>>>> workspace
 =======
 
 >>>>>>> workspace
