@@ -69,8 +69,8 @@ $env:OLD_PATH = $env:PATH
 if ($env:COMPUTERNAME -like "CPC-jamya*") {
   $env:MachineType = "dev-cloud"
   $env:Dev = "Q:\dev"
-  $env:DownEnlistRoot = "Q:\edge"
-  $env:UpEnlistRoot = "Q:\cr"
+  $env:DownEnlistRoot = "Q:\dev\edge"
+  $env:UpEnlistRoot = "Q:\dev\cr"
 }
 elseif ($env:COMPUTERNAME -eq "JAMYAO-DEV") {
   $env:MachineType = "dev"
@@ -175,3 +175,4 @@ Set-Internal
 function dev {
     py "$env:USERPROFILE\.dev_scripts\dev.py" @args
 }
+
