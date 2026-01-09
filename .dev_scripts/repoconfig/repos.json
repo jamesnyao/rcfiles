@@ -42,6 +42,30 @@
       "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es.sealion",
       "addedFrom": "Q:\\dev\\sealion",
       "addedAt": "2026-01-09T02:18:57.197458+00:00"
+    },
+    {
+      "name": "chromium.infra.build",
+      "remoteUrl": "https://chromium.googlesource.com/build",
+      "addedFrom": "Q:\\dev\\chromium.infra.build",
+      "addedAt": "2026-01-09T02:50:11.594254+00:00"
+    },
+    {
+      "name": "es2",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es",
+      "addedFrom": "Q:\\dev\\es2",
+      "addedAt": "2026-01-09T02:50:32.234049+00:00"
+    },
+    {
+      "name": "infra_base/infra",
+      "remoteUrl": "https://microsoft.visualstudio.com/Edge/_git/chromium.infra",
+      "addedFrom": "Q:\\dev\\infra_base\\infra",
+      "addedAt": "2026-01-09T02:52:08.858017+00:00"
+    },
+    {
+      "name": "infra_cr_base/infra",
+      "remoteUrl": "https://chromium.googlesource.com/infra/infra",
+      "addedFrom": "Q:\\dev\\infra_cr_base\\infra",
+      "addedAt": "2026-01-09T02:52:09.128929+00:00"
     }
   ]
 }
