@@ -67,9 +67,9 @@ Alternative Edge source checkout (same structure as edge/src).
 ### Testing on RE Preprod
 To test changes on RE Preprod, use:
 ```bash
-set_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build chrome
+set-dev-re; set_remote_only; autoninja -C out/linux_x64_debug_developer_build chrome
 ```
-- `set_dev` - Points to the RE Preprod environment
+- `set-dev-re` - Points to the RE Preprod environment
 - `set_remote_only` - Prevents local fallbacks from polluting the output and giving false positive build results
 
 **Note:** If testing a preprod build with fallbacks disabled and the build fails purely due to timeouts, restart the build. This is caused by high load and is not indicative of 500 errors.
