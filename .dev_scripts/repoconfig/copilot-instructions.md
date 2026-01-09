@@ -1,4 +1,3 @@
-<<<<<<< repoconfig
 # Copilot Instructions
 
 This workspace contains multiple repositories for Microsoft Edge infrastructure and build systems.
@@ -6,14 +5,6 @@ Update this file with any relavant information that would help Copilot provide b
 Review any deletions to this file - unless the information is no longer accurate.
 
 **If this file contains merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`), resolve them immediately.** Analyze both versions, preserve all valuable content from each side, fix any typos, and remove the conflict markers. Prefer the version with more detail or corrections. After resolving, ensure the file is valid markdown. (Note: The markers shown in this rule as examples are not actual conflicts.)
-=======
-<<<<<<< C:\Users\jamyao\AppData\Local\Temp\tmpv3aa5bzp\workspace.md
-# Copilot Instructions
-
-This workspace contains multiple repositories for Microsoft Edge infrastructure and build systems.
-Update this file with any relavant information that would help Copilot provide better suggestions.
-Review any deletions to this file - unless the information is no longer accurate.
->>>>>>> workspace
 
 ## Critical Rules
 
@@ -140,6 +131,7 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
 ```
 <<<<<<< repoconfig
 <<<<<<< repoconfig
+<<<<<<< repoconfig
 =======
 ## Quick Reference
 
@@ -170,6 +162,9 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
 >>>>>>> workspace
 
 <<<<<<< repoconfig
+=======
+
+>>>>>>> workspace
 =======
 
 >>>>>>> workspace
