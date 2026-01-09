@@ -8,24 +8,6 @@
   },
   "repos": [
     {
-      "name": "cr/depot_tools",
-      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools.cr-contrib",
-      "addedFrom": "Q:\\dev\\cr\\depot_tools",
-      "addedAt": "2026-01-09T02:18:56.524895+00:00"
-    },
-    {
-      "name": "cr/src",
-      "remoteUrl": "https://chromium.googlesource.com/chromium/src.git",
-      "addedFrom": "Q:\\dev\\cr\\src",
-      "addedAt": "2026-01-09T02:18:56.581971+00:00"
-    },
-    {
-      "name": "edge/src",
-      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.src",
-      "addedFrom": "Q:\\dev\\edge\\src",
-      "addedAt": "2026-01-09T02:18:56.765308+00:00"
-    },
-    {
       "name": "es",
       "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es",
       "addedFrom": "Q:\\dev\\es",
@@ -66,6 +48,30 @@
       "remoteUrl": "https://chromium.googlesource.com/infra/infra",
       "addedFrom": "Q:\\dev\\infra_cr_base\\infra",
       "addedAt": "2026-01-09T02:52:09.128929+00:00"
+    },
+    {
+      "name": "edge/depot_tools",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools",
+      "addedFrom": "Q:\\dev\\edge\\depot_tools",
+      "addedAt": "2026-01-09T02:55:06.467239+00:00"
+    },
+    {
+      "name": "edge/src",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.src",
+      "addedFrom": "Q:\\dev\\edge\\src",
+      "addedAt": "2026-01-09T02:55:42.284263+00:00"
+    },
+    {
+      "name": "cr/src",
+      "remoteUrl": "https://chromium.googlesource.com/chromium/src.git",
+      "addedFrom": "Q:\\dev\\cr\\src",
+      "addedAt": "2026-01-09T02:55:47.959999+00:00"
+    },
+    {
+      "name": "cr/depot_tools",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools.cr-contrib",
+      "addedFrom": "Q:\\dev\\cr\\depot_tools",
+      "addedAt": "2026-01-09T02:55:56.818160+00:00"
     }
   ]
 }

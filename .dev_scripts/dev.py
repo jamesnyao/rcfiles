@@ -312,13 +312,13 @@ def cmd_repo_sync(args):
     return 0
 
 def sync_copilot_instructions(base_path):
-    """Merge copilot instructions between config and workspace, with diff and sync options"""
-    import difflib
+    """Merge copilot instructions using git merge for smart conflict resolution"""
+    import tempfile
     copilot_src = CONFIG_DIR / 'copilot-instructions.md'
     copilot_dest = base_path / '.github' / 'copilot-instructions.md'
 
     copilot_dest.parent.mkdir(parents=True, exist_ok=True)
-    
+
     src_content = copilot_src.read_text(encoding='utf-8') if copilot_src.exists() else ''
     dest_content = copilot_dest.read_text(encoding='utf-8') if copilot_dest.exists() else ''
 
@@ -327,50 +327,59 @@ def sync_copilot_instructions(base_path):
             print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
         return
 
-    # Show diff
-    src_lines = src_content.splitlines(keepends=True)
-    dest_lines = dest_content.splitlines(keepends=True)
+    print(f"{Colors.YELLOW}[WARN] Copilot instructions differ{Colors.NC}")
     
-    diff = list(difflib.unified_diff(src_lines, dest_lines, 
-                                      fromfile='repoconfig/copilot-instructions.md',
-                                      tofile='.github/copilot-instructions.md'))
+    # Use git merge-file for 3-way merge
+    # Get the last committed version from rcfiles as the base
+    success, base_content = run_git(SCRIPT_DIR, 'show', 'HEAD:repoconfig/copilot-instructions.md')
+    if not success:
+        base_content = ''  # No common ancestor, treat as new file
     
-    if diff:
-        print(f"{Colors.YELLOW}[WARN] Copilot instructions differ:{Colors.NC}")
-        for line in diff[:50]:  # Limit output
-            line = line.rstrip('\n')
-            if line.startswith('+') and not line.startswith('+++'):
-                print(f"{Colors.GREEN}{line}{Colors.NC}")
-            elif line.startswith('-') and not line.startswith('---'):
-                print(f"{Colors.RED}{line}{Colors.NC}")
-            elif line.startswith('@@'):
-                print(f"{Colors.CYAN}{line}{Colors.NC}")
-            else:
-                print(line)
-        if len(diff) > 50:
-            print(f"  ... ({len(diff) - 50} more lines)")
-        print()
+    # Create temp files for merge
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        base_file = tmpdir / 'base.md'
+        src_file = tmpdir / 'repoconfig.md'
+        dest_file = tmpdir / 'workspace.md'
         
-        # Offer options
-        print("Options:")
-        print("  [W] Use workspace version (copy to repoconfig) [default]")
-        print("  [r] Use repoconfig version (copy to workspace)")
-        print("  [s] Skip")
-        try:
-            response = input("Choice [W/r/s]: ").strip().lower() or 'w'
-        except EOFError:
+        base_file.write_text(base_content, encoding='utf-8')
+        src_file.write_text(src_content, encoding='utf-8')
+        dest_file.write_text(dest_content, encoding='utf-8')
+        
+        # git merge-file: merges src into dest using base as common ancestor
+        # -p outputs to stdout, --diff3 shows base in conflicts
+        result = subprocess.run(
+            ['git', 'merge-file', '-p', '--diff3',
+             str(dest_file), str(base_file), str(src_file)],
+            capture_output=True, text=True
+        )
+        
+        merged_content = result.stdout
+        has_conflicts = result.returncode != 0
+        
+        if not has_conflicts and merged_content == dest_content:
+            # Clean merge, workspace is superset - update repoconfig
+            copilot_src.write_text(dest_content, encoding='utf-8')
+            print(f"{Colors.GREEN}[OK]{Colors.NC} Auto-merged (workspace version is superset)")
+            return
+        elif not has_conflicts and merged_content == src_content:
+            # Clean merge, repoconfig is superset - update workspace
+            copilot_dest.write_text(src_content, encoding='utf-8')
+            print(f"{Colors.GREEN}[OK]{Colors.NC} Auto-merged (repoconfig version is superset)")
+            return
+        elif not has_conflicts:
+            # Clean merge with actual merging from both
+            print(f"{Colors.GREEN}[OK]{Colors.NC} Auto-merged changes from both versions")
+            copilot_dest.write_text(merged_content, encoding='utf-8')
+            copilot_src.write_text(merged_content, encoding='utf-8')
             return
         
-        if response == 'w':
-            # Push workspace to repoconfig
-            copilot_src.write_text(dest_content, encoding='utf-8')
-            print(f"{Colors.GREEN}[OK]{Colors.NC} Updated repoconfig with workspace version")
-        elif response == 'r':
-            # Pull repoconfig to workspace
-            copilot_dest.write_text(src_content, encoding='utf-8')
-            print(f"{Colors.GREEN}[OK]{Colors.NC} Updated workspace with repoconfig version")
-        else:
-            print(f"{Colors.YELLOW}[SKIP]{Colors.NC} Copilot instructions not synced")
+        # Has conflicts - write merged content with conflict markers to workspace
+        print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Merge conflicts detected")
+        print("  Conflict markers written to workspace file")
+        print("  Use Copilot or editor to resolve, then run 'dev repo sync' again")
+        copilot_dest.write_text(merged_content, encoding='utf-8')
+
 
 
 def cmd_repo_status(args):
