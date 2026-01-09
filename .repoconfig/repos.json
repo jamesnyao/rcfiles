@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "description": "Tracked repositories for cross-machine sync",
+  "defaultBasePaths": {
+    "linux": "/workspace",
+    "darwin": "/workspace",
+    "windows": "C:\\dev"
+  },
+  "repos": [
+    {
+      "name": "chromium.infra.build",
+      "remoteUrl": "https://chromium.googlesource.com/build",
+      "addedFrom": "/workspace/chromium.infra.build",
+      "addedAt": "2026-01-09T01:26:37Z"
+    }
+  ]
+}

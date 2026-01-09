@@ -171,3 +171,8 @@ else {
 
 #Set-Clean
 Set-Internal
+
+# Dev CLI
+function dev {
+    & "$env:USERPROFILE\.repoconfig\dev.ps1" @args
+}
