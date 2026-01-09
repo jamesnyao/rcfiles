@@ -755,6 +755,19 @@ def cmd_python_update(args):
             result = subprocess.run(['sudo', 'dnf', 'install', '-y', 'python3.12'])
         return 0 if result.returncode == 0 else 1
 
+
+def cmd_test(args):
+    """Run dev.py unit tests"""
+    test_file = SCRIPT_DIR / 'test_dev.py'
+    if not test_file.exists():
+        print(f"{Colors.RED}Error: test_dev.py not found{Colors.NC}")
+        return 1
+    
+    print(f"{Colors.BLUE}Running tests...{Colors.NC}")
+    result = subprocess.run([sys.executable, str(test_file)], cwd=str(SCRIPT_DIR))
+    return result.returncode
+
+
 def main():
     parser = argparse.ArgumentParser(description='Dev CLI - Development workflow tool')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
@@ -786,9 +799,14 @@ def main():
     pyenv_sub = pyenv_parser.add_subparsers(dest='python_command')
     pyenv_sub.add_parser('update', help='Update Python to latest stable version')
 
+    # Test command
+    subparsers.add_parser('test', help='Run dev.py unit tests')
+
     args = parser.parse_args()
 
-    if args.command == 'python':
+    if args.command == 'test':
+        return cmd_test(args)
+    elif args.command == 'python':
         if args.python_command == 'update':
             return cmd_python_update(args)
         else:
