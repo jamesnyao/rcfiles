@@ -273,12 +273,15 @@ def sync_rcfiles():
 
 def cmd_repo_sync(args):
     """Clone missing repositories and check for stale branches"""
-    # First, update rcfiles itself
-    sync_rcfiles()
-    print()
-
     config = load_config()
     base_path = Path(get_base_path(config))
+    
+    # First, merge copilot instructions (before syncing rcfiles so changes get pushed)
+    merge_copilot_instructions_to_repoconfig(base_path)
+    
+    # Now sync rcfiles (pull, commit local changes including copilot, push)
+    sync_rcfiles()
+    print()
 
     print(f"{Colors.BLUE}Syncing repositories to: {base_path}{Colors.NC}")
     print("-" * 60)
@@ -322,10 +325,95 @@ def cmd_repo_sync(args):
 
     print("-" * 60)
     print(f"Synced: {Colors.GREEN}{synced}{Colors.NC} | Skipped: {Colors.YELLOW}{skipped}{Colors.NC} | Failed: {Colors.RED}{failed}{Colors.NC}")
-    # Sync copilot instructions
-    sync_copilot_instructions(base_path)
+    # Apply copilot instructions to workspace (repoconfig was already updated and pushed)
+    apply_copilot_instructions_to_workspace(base_path)
 
     return 0
+
+
+def merge_copilot_instructions_to_repoconfig(base_path):
+    """Merge workspace copilot instructions into repoconfig (before rcfiles push).
+    
+    This captures any workspace changes into repoconfig so they get pushed.
+    """
+    copilot_src = CONFIG_DIR / 'copilot-instructions.md'
+    copilot_dest = base_path / '.github' / 'copilot-instructions.md'
+    
+    if not copilot_dest.exists():
+        return  # No workspace file to merge
+    
+    src_content = copilot_src.read_text(encoding='utf-8') if copilot_src.exists() else ''
+    dest_content = copilot_dest.read_text(encoding='utf-8')
+    
+    # Normalize for comparison
+    src_normalized = src_content.replace('\r\n', '\n')
+    dest_normalized = dest_content.replace('\r\n', '\n')
+    
+    if src_normalized == dest_normalized:
+        return  # Already in sync
+    
+    # If repoconfig is empty, just copy from workspace
+    if not src_content.strip():
+        copilot_src.write_text(dest_content, encoding='utf-8')
+        return
+    
+    # If workspace is empty, nothing to merge
+    if not dest_content.strip():
+        return
+    
+    # Merge workspace changes into repoconfig
+    merged_content, has_conflicts = try_git_merge(src_content, dest_content)
+    
+    if merged_content is None:
+        # Fallback to section merge
+        merged_content, has_conflicts = section_merge(src_content, dest_content)
+    
+    # Write merged content to repoconfig (will be committed and pushed)
+    if merged_content:
+        copilot_src.write_text(merged_content, encoding='utf-8')
+
+
+def apply_copilot_instructions_to_workspace(base_path):
+    """Apply repoconfig copilot instructions to workspace (after rcfiles pull).
+    
+    This propagates the merged/synced instructions to the workspace.
+    """
+    copilot_src = CONFIG_DIR / 'copilot-instructions.md'
+    copilot_dest = base_path / '.github' / 'copilot-instructions.md'
+    
+    copilot_dest.parent.mkdir(parents=True, exist_ok=True)
+    
+    src_content = copilot_src.read_text(encoding='utf-8') if copilot_src.exists() else ''
+    dest_content = copilot_dest.read_text(encoding='utf-8') if copilot_dest.exists() else ''
+    
+    # Normalize for comparison
+    src_normalized = src_content.replace('\r\n', '\n')
+    dest_normalized = dest_content.replace('\r\n', '\n')
+    
+    if src_normalized == dest_normalized:
+        if src_content:
+            print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
+        return
+    
+    # Check for conflict markers in either file
+    has_src_conflicts = '<<<<<<<' in src_content
+    has_dest_conflicts = '<<<<<<<' in dest_content
+    
+    if has_src_conflicts or has_dest_conflicts:
+        print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
+        print("  Conflict markers in .github/copilot-instructions.md")
+        print("  Use Copilot to resolve, then run 'dev repo sync' again")
+        return
+    
+    # Apply repoconfig to workspace
+    if src_content.strip():
+        copilot_dest.write_text(src_content, encoding='utf-8')
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions synced")
+    elif dest_content.strip():
+        # Workspace has content but repoconfig doesn't - preserve workspace
+        copilot_src.write_text(dest_content, encoding='utf-8')
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions synced from workspace")
+
 
 def sync_copilot_instructions(base_path):
     """Merge copilot instructions using git's 3-way merge for automatic conflict resolution.
