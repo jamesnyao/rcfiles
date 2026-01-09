@@ -441,13 +441,17 @@ def section_merge(src_content, dest_content):
         src_sec = src_sections.get(header, '')
         dest_sec = dest_sections.get(header, '')
         
-        if src_sec == dest_sec:
-            # Identical - use either
-            merged_parts.append(src_sec if src_sec else dest_sec)
-        elif not src_sec:
+        # Normalize for comparison (strip trailing whitespace)
+        src_normalized = src_sec.rstrip()
+        dest_normalized = dest_sec.rstrip()
+        
+        if src_normalized == dest_normalized:
+            # Identical - use either (prefer dest to keep formatting)
+            merged_parts.append(dest_sec if dest_sec else src_sec)
+        elif not src_sec.strip():
             # Only in dest (workspace) - keep it
             merged_parts.append(dest_sec)
-        elif not dest_sec:
+        elif not dest_sec.strip():
             # Only in src (repoconfig) - add it
             merged_parts.append(src_sec)
         else:
