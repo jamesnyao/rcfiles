@@ -121,7 +121,7 @@ def check_stale_branch(repo_path, name):
     if not default or current == default:
         return
 
-    print(f"{Colors.YELLOW}[WARN] {name}: branch '{current}' is {age_days} days old{Colors.NC}")
+    print(f"{Colors.YELLOW}[WARN]{Colors.NC} {name}: branch '{current}' is {age_days} days old")
     try:
         response = input(f"  Switch to '{default}'? [Y/n] ").strip().lower() or 'y'
     except EOFError:
@@ -170,17 +170,17 @@ def cmd_repo_add(args):
     repo_path = Path(args.path).resolve()
 
     if not repo_path.exists():
-        print(f"{Colors.RED}Error: Directory does not exist: {repo_path}{Colors.NC}")
+        print(f"{Colors.RED}[X]{Colors.NC} Directory does not exist: {repo_path}")
         return 1
 
     git_dir = repo_path / '.git'
     if not git_dir.exists():
-        print(f"{Colors.RED}Error: Not a git repository: {repo_path}{Colors.NC}")
+        print(f"{Colors.RED}[X]{Colors.NC} Not a git repository: {repo_path}")
         return 1
 
     remote_url = get_remote_url(repo_path)
     if not remote_url:
-        print(f"{Colors.YELLOW}Warning: No 'origin' remote found{Colors.NC}")
+        print(f"{Colors.YELLOW}[WARN]{Colors.NC} No 'origin' remote found")
 
     config = load_config()
     base_path = get_base_path(config)
@@ -209,7 +209,7 @@ def cmd_repo_remove(args):
     config['repos'] = [r for r in config['repos'] if r['name'] != args.name]
 
     if len(config['repos']) == original_count:
-        print(f"{Colors.RED}Repository '{args.name}' is not tracked{Colors.NC}")
+        print(f"{Colors.RED}[X]{Colors.NC} Repository '{args.name}' is not tracked")
         return 1
 
     save_config(config)
@@ -223,7 +223,7 @@ def cmd_repo_list(args):
     print("-" * 60)
 
     if not config['repos']:
-        print(f"{Colors.YELLOW}No repositories tracked yet.{Colors.NC}")
+        print(f"{Colors.YELLOW}[WARN]{Colors.NC} No repositories tracked yet.")
         print("Use 'dev repo add <path>' to add a repository.")
         return 0
 
@@ -254,7 +254,7 @@ def sync_rcfiles():
     # Fetch latest from remote
     success, _ = run_git(SCRIPT_DIR, 'fetch', 'origin')
     if not success:
-        print(f"{Colors.YELLOW}[WARN] Could not fetch from remote{Colors.NC}")
+        print(f"{Colors.YELLOW}[WARN]{Colors.NC} Could not fetch from remote")
         return
     
     # Get the default branch
@@ -269,17 +269,15 @@ def sync_rcfiles():
     except:
         ahead, behind = 0, 0
     
+    # If behind, rebase first
     if behind > 0:
-        # We're behind remote - rebase our commits on top of remote
         success, output = run_git(SCRIPT_DIR, 'rebase', f'origin/{default_branch}')
         if not success:
-            # Rebase failed (conflict) - abort and warn user
             run_git(SCRIPT_DIR, 'rebase', '--abort')
-            print(f"{Colors.RED}[X] Rebase conflict in rcfiles. Please resolve manually.{Colors.NC}")
+            print(f"{Colors.RED}[X]{Colors.NC} Rebase conflict in rcfiles. Please resolve manually.")
             return
-        print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles rebased on remote ({behind} commits)")
     
-    # Check again if we're ahead after rebase
+    # Re-check ahead count after potential rebase
     _, ahead_behind = run_git(SCRIPT_DIR, 'rev-list', '--left-right', '--count', f'HEAD...origin/{default_branch}')
     try:
         ahead, _ = ahead_behind.split()
@@ -287,13 +285,13 @@ def sync_rcfiles():
     except:
         ahead = 0
     
+    # Push if we have local commits
     if ahead > 0:
-        # We're ahead - just push
         success, output = run_git(SCRIPT_DIR, 'push')
         if success:
             print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles pushed ({ahead} commits)")
         else:
-            print(f"{Colors.RED}[X] Failed to push rcfiles: {output}{Colors.NC}")
+            print(f"{Colors.RED}[X]{Colors.NC} Failed to push rcfiles: {output}")
     else:
         print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles up to date")
 
@@ -314,7 +312,7 @@ def cmd_repo_sync(args):
     print("-" * 60)
 
     if not config['repos']:
-        print(f"{Colors.YELLOW}No repositories to sync.{Colors.NC}")
+        print(f"{Colors.YELLOW}[WARN]{Colors.NC} No repositories to sync.")
         return 0
 
     base_path.mkdir(parents=True, exist_ok=True)
@@ -334,7 +332,7 @@ def cmd_repo_sync(args):
             continue
 
         if not url:
-            print(f"{Colors.RED}[X] Cannot clone {name} (no remote URL){Colors.NC}")
+            print(f"{Colors.RED}[X]{Colors.NC} Cannot clone {name} (no remote URL)")
             failed += 1
             continue
 
@@ -347,7 +345,7 @@ def cmd_repo_sync(args):
             print(f"{Colors.GREEN}[OK] Cloned {name}{Colors.NC}")
             synced += 1
         else:
-            print(f"{Colors.RED}[X] Failed to clone {name}{Colors.NC}")
+            print(f"{Colors.RED}[X]{Colors.NC} Failed to clone {name}")
             failed += 1
 
     print("-" * 60)
@@ -544,7 +542,7 @@ def cmd_repo_scan(args):
 def cmd_repo_set_path(args):
     """Set base path for an OS"""
     if args.os not in ('linux', 'darwin', 'windows'):
-        print(f"{Colors.RED}Error: OS must be linux, darwin, or windows{Colors.NC}")
+        print(f"{Colors.RED}[X]{Colors.NC} OS must be linux, darwin, or windows")
         return 1
 
     config = load_config()
@@ -603,7 +601,7 @@ def cmd_python_update(args):
             print(f'{Colors.GREEN}Python updated successfully{Colors.NC}')
             print(f'{Colors.YELLOW}Note: Restart your terminal for changes to take effect{Colors.NC}')
             return 0
-        print(f'{Colors.RED}Failed to update Python{Colors.NC}')
+        print(f'{Colors.RED}[X]{Colors.NC} Failed to update Python')
         return 1
 
     elif os_type == 'darwin':
@@ -628,7 +626,7 @@ def cmd_test(args):
     """Run dev.py unit tests"""
     test_file = SCRIPT_DIR / 'test_dev.py'
     if not test_file.exists():
-        print(f"{Colors.RED}Error: test_dev.py not found{Colors.NC}")
+        print(f"{Colors.RED}[X]{Colors.NC} test_dev.py not found")
         return 1
     
     print(f"{Colors.BLUE}Running tests...{Colors.NC}")
@@ -655,11 +653,11 @@ def cmd_ado_set_pat(args):
             import getpass
             pat = getpass.getpass("Enter your Azure DevOps PAT: ").strip()
         except EOFError:
-            print(f"{Colors.RED}Error: No PAT provided{Colors.NC}")
+            print(f"{Colors.RED}[X]{Colors.NC} No PAT provided")
             return 1
     
     if not pat:
-        print(f"{Colors.RED}Error: PAT cannot be empty{Colors.NC}")
+        print(f"{Colors.RED}[X]{Colors.NC} PAT cannot be empty")
         return 1
     
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
