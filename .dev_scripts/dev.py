@@ -340,6 +340,60 @@ def cmd_repo_set_path(args):
     print(f"{Colors.GREEN}Set {args.os} base path to: {args.path}{Colors.NC}")
     return 0
 
+
+# ============ PYTHON COMMANDS ============
+
+def get_current_python_version():
+    """Get the currently installed Python version"""
+    try:
+        result = subprocess.run(['py', '--version'], capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        return None
+    except Exception:
+        return None
+
+def cmd_python_update(args):
+    """Update Python to the latest stable version"""
+    os_type = get_os_type()
+    
+    print(f'{Colors.BLUE}Checking Python installation...{Colors.NC}')
+    current = get_current_python_version()
+    if current:
+        print(f'  Current: {Colors.CYAN}{current}{Colors.NC}')
+    
+    if os_type == 'windows':
+        print(f'{Colors.BLUE}Updating Python via winget...{Colors.NC}')
+        result = subprocess.run(['winget', 'upgrade', 'Python.Python.3.12'], capture_output=False)
+        if result.returncode != 0:
+            print(f'{Colors.YELLOW}No existing installation found, installing...{Colors.NC}')
+            result = subprocess.run(['winget', 'install', 'Python.Python.3.12', '--accept-package-agreements', '--accept-source-agreements'])
+        
+        if result.returncode == 0:
+            print(f'{Colors.GREEN}Python updated successfully{Colors.NC}')
+            print(f'{Colors.YELLOW}Note: You may need to restart your terminal{Colors.NC}')
+            return 0
+        else:
+            print(f'{Colors.RED}Failed to update Python{Colors.NC}')
+            return 1
+            
+    elif os_type == 'darwin':
+        print(f'{Colors.BLUE}Updating Python via Homebrew...{Colors.NC}')
+        result = subprocess.run(['brew', 'upgrade', 'python@3.12'])
+        if result.returncode != 0:
+            result = subprocess.run(['brew', 'install', 'python@3.12'])
+        return 0 if result.returncode == 0 else 1
+            
+    else:
+        print(f'{Colors.BLUE}Updating Python...{Colors.NC}')
+        result = subprocess.run(['which', 'apt'], capture_output=True)
+        if result.returncode == 0:
+            subprocess.run(['sudo', 'apt', 'update'])
+            result = subprocess.run(['sudo', 'apt', 'install', '-y', 'python3.12'])
+        else:
+            result = subprocess.run(['sudo', 'dnf', 'install', '-y', 'python3.12'])
+        return 0 if result.returncode == 0 else 1
+
 def main():
     parser = argparse.ArgumentParser(description='Dev CLI - Development workflow tool')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
@@ -365,9 +419,20 @@ def main():
     setpath_p.add_argument('os', help='OS (linux/darwin/windows)')
     setpath_p.add_argument('path', help='Base path')
     
+
+    # python subcommand
+    pyenv_parser = subparsers.add_parser('python', help='Python environment management')
+    pyenv_sub = pyenv_parser.add_subparsers(dest='python_command')
+    pyenv_sub.add_parser('update', help='Update Python to latest stable version')
+
     args = parser.parse_args()
     
-    if args.command == 'repo':
+    if args.command == 'python':
+        if args.python_command == 'update':
+            return cmd_python_update(args)
+        else:
+            pyenv_parser.print_help()
+    elif args.command == 'repo':
         cmd_map = {
             'add': cmd_repo_add,
             'remove': cmd_repo_remove,
