@@ -87,7 +87,7 @@ def get_default_branch(repo_path):
     success, ref = run_git(repo_path, 'symbolic-ref', 'refs/remotes/origin/HEAD')
     if success and ref:
         return ref.replace('refs/remotes/origin/', '')
-    
+
     # Fallback to common defaults
     for branch in ['main', 'master']:
         success, _ = run_git(repo_path, 'show-ref', '--verify', '--quiet', f'refs/remotes/origin/{branch}')
@@ -112,60 +112,90 @@ def check_stale_branch(repo_path, name):
     current = get_current_branch(repo_path)
     if not current or current == 'HEAD':
         return
-    
+
     age_days = get_branch_age_days(repo_path)
     if age_days < 14:
         return
-    
+
     default = get_default_branch(repo_path)
     if not default or current == default:
         return
-    
-    print(f"{Colors.YELLOW}⚠ {name}: branch '{current}' is {age_days} days old{Colors.NC}")
+
+    print(f"{Colors.YELLOW}[WARN] {name}: branch '{current}' is {age_days} days old{Colors.NC}")
     try:
-        response = input(f"  Switch to '{default}'? [y/N] ").strip().lower()
+        response = input(f"  Switch to '{default}'? [Y/n] ").strip().lower() or 'y'
     except EOFError:
         return
-    
+
     if response == 'y':
         print(f"  {Colors.BLUE}Switching to {default}...{Colors.NC}")
         run_git(repo_path, 'fetch', 'origin')
         run_git(repo_path, 'checkout', '-f', default)
         run_git(repo_path, 'reset', '--hard', f'origin/{default}')
-        print(f"  {Colors.GREEN}✓ Switched to {default}{Colors.NC}")
+        print(f"  {Colors.GREEN}[OK] Switched to {default}{Colors.NC}")
+
+def compute_repo_name(repo_path, base_path=None):
+    """
+    Compute a repo name from path, supporting nested structures like edge/src, cr/depot_tools.
+    If the repo is under a known enlistment structure (contains .gclient), use parent/name format.
+    """
+    repo_path = Path(repo_path).resolve()
+    
+    # Check if parent directory looks like a gclient enlistment (has .gclient file)
+    parent = repo_path.parent
+    if (parent / '.gclient').exists():
+        # This is a nested repo like edge/src or cr/depot_tools
+        return f"{parent.name}/{repo_path.name}"
+    
+    # Check if this is a top-level repo directly in base_path
+    if base_path:
+        base_path = Path(base_path).resolve()
+        try:
+            rel_path = repo_path.relative_to(base_path)
+            parts = rel_path.parts
+            if len(parts) >= 2:
+                # Check if the intermediate dir is an enlistment
+                intermediate = base_path / parts[0]
+                if (intermediate / '.gclient').exists():
+                    return '/'.join(parts[:2])
+        except ValueError:
+            pass
+    
+    return repo_path.name
 
 # ============ REPO COMMANDS ============
 
 def cmd_repo_add(args):
     """Add a repository to tracking"""
     repo_path = Path(args.path).resolve()
-    
+
     if not repo_path.exists():
         print(f"{Colors.RED}Error: Directory does not exist: {repo_path}{Colors.NC}")
         return 1
-    
+
     git_dir = repo_path / '.git'
     if not git_dir.exists():
         print(f"{Colors.RED}Error: Not a git repository: {repo_path}{Colors.NC}")
         return 1
-    
+
     remote_url = get_remote_url(repo_path)
     if not remote_url:
         print(f"{Colors.YELLOW}Warning: No 'origin' remote found{Colors.NC}")
-    
-    repo_name = repo_path.name
+
     config = load_config()
-    
+    base_path = get_base_path(config)
+    repo_name = compute_repo_name(repo_path, base_path)
+
     # Remove existing entry if present
     config['repos'] = [r for r in config['repos'] if r['name'] != repo_name]
-    
+
     config['repos'].append({
         'name': repo_name,
         'remoteUrl': remote_url,
         'addedFrom': str(repo_path),
         'addedAt': datetime.now(timezone.utc).isoformat()
     })
-    
+
     save_config(config)
     print(f"{Colors.GREEN}Added repository: {repo_name}{Colors.NC}")
     print(f"  Remote: {Colors.CYAN}{remote_url}{Colors.NC}")
@@ -177,11 +207,11 @@ def cmd_repo_remove(args):
     config = load_config()
     original_count = len(config['repos'])
     config['repos'] = [r for r in config['repos'] if r['name'] != args.name]
-    
+
     if len(config['repos']) == original_count:
         print(f"{Colors.RED}Repository '{args.name}' is not tracked{Colors.NC}")
         return 1
-    
+
     save_config(config)
     print(f"{Colors.GREEN}Removed repository: {args.name}{Colors.NC}")
     return 0
@@ -190,20 +220,20 @@ def cmd_repo_list(args):
     """List all tracked repositories"""
     config = load_config()
     print(f"{Colors.BLUE}Tracked Repositories:{Colors.NC}")
-    print("━" * 60)
-    
+    print("-" * 60)
+
     if not config['repos']:
         print(f"{Colors.YELLOW}No repositories tracked yet.{Colors.NC}")
         print("Use 'dev repo add <path>' to add a repository.")
         return 0
-    
+
     for repo in config['repos']:
         print(f"  {repo['name']}")
         print(f"    Remote: {repo.get('remoteUrl', 'N/A')}")
         print(f"    Added: {repo.get('addedAt', 'Unknown')}")
         print()
-    
-    print("━" * 60)
+
+    print("-" * 60)
     print(f"Total: {Colors.GREEN}{len(config['repos'])}{Colors.NC} repositories")
     return 0
 
@@ -211,120 +241,175 @@ def cmd_repo_sync(args):
     """Clone missing repositories and check for stale branches"""
     config = load_config()
     base_path = Path(get_base_path(config))
-    
+
     print(f"{Colors.BLUE}Syncing repositories to: {base_path}{Colors.NC}")
-    print("━" * 60)
-    
+    print("-" * 60)
+
     if not config['repos']:
         print(f"{Colors.YELLOW}No repositories to sync.{Colors.NC}")
         return 0
-    
+
     base_path.mkdir(parents=True, exist_ok=True)
-    
+
     synced = skipped = failed = 0
-    
+
     for repo in config['repos']:
         name = repo['name']
         url = repo.get('remoteUrl', '')
-        target_path = base_path / name
-        
+        # Handle nested paths like edge/src
+        target_path = base_path / name.replace('/', os.sep)
+
         if target_path.exists():
-            print(f"{Colors.YELLOW}⏭ Skipping {name} (already exists){Colors.NC}")
+            print(f"{Colors.YELLOW}[SKIP] Skipping {name} (already exists){Colors.NC}")
             check_stale_branch(target_path, name)
             skipped += 1
             continue
-        
+
         if not url:
-            print(f"{Colors.RED}✗ Cannot clone {name} (no remote URL){Colors.NC}")
+            print(f"{Colors.RED}[X] Cannot clone {name} (no remote URL){Colors.NC}")
             failed += 1
             continue
-        
-        print(f"{Colors.BLUE}⬇ Cloning {name}...{Colors.NC}")
+
+        # Create parent directory if needed (for nested repos)
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+
+        print(f"{Colors.BLUE}[DOWN] Cloning {name}...{Colors.NC}")
         result = subprocess.run(['git', 'clone', url, str(target_path)])
         if result.returncode == 0:
-            print(f"{Colors.GREEN}✓ Cloned {name}{Colors.NC}")
+            print(f"{Colors.GREEN}[OK] Cloned {name}{Colors.NC}")
             synced += 1
         else:
-            print(f"{Colors.RED}✗ Failed to clone {name}{Colors.NC}")
+            print(f"{Colors.RED}[X] Failed to clone {name}{Colors.NC}")
             failed += 1
-    
-    print("━" * 60)
+
+    print("-" * 60)
     print(f"Synced: {Colors.GREEN}{synced}{Colors.NC} | Skipped: {Colors.YELLOW}{skipped}{Colors.NC} | Failed: {Colors.RED}{failed}{Colors.NC}")
-    
     # Sync copilot instructions
     sync_copilot_instructions(base_path)
-    
+
     return 0
 
 def sync_copilot_instructions(base_path):
-    """Copy copilot instructions from config to target workspace"""
+    """Merge copilot instructions between config and workspace, with diff and sync options"""
+    import difflib
     copilot_src = CONFIG_DIR / 'copilot-instructions.md'
     copilot_dest = base_path / '.github' / 'copilot-instructions.md'
-    
-    if not copilot_src.exists():
-        return
-    
+
     copilot_dest.parent.mkdir(parents=True, exist_ok=True)
     
-    # Check if destination exists and is different
-    if copilot_dest.exists():
-        src_content = copilot_src.read_text()
-        dest_content = copilot_dest.read_text()
-        if src_content == dest_content:
-            print(f"{Colors.GREEN}✓{Colors.NC} Copilot instructions up to date")
-            return
-        print(f"{Colors.YELLOW}⚠ Copilot instructions differ{Colors.NC}")
+    src_content = copilot_src.read_text(encoding='utf-8') if copilot_src.exists() else ''
+    dest_content = copilot_dest.read_text(encoding='utf-8') if copilot_dest.exists() else ''
+
+    if src_content == dest_content:
+        if src_content:
+            print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
+        return
+
+    # Show diff
+    src_lines = src_content.splitlines(keepends=True)
+    dest_lines = dest_content.splitlines(keepends=True)
+    
+    diff = list(difflib.unified_diff(src_lines, dest_lines, 
+                                      fromfile='repoconfig/copilot-instructions.md',
+                                      tofile='.github/copilot-instructions.md'))
+    
+    if diff:
+        print(f"{Colors.YELLOW}[WARN] Copilot instructions differ:{Colors.NC}")
+        for line in diff[:50]:  # Limit output
+            line = line.rstrip('\n')
+            if line.startswith('+') and not line.startswith('+++'):
+                print(f"{Colors.GREEN}{line}{Colors.NC}")
+            elif line.startswith('-') and not line.startswith('---'):
+                print(f"{Colors.RED}{line}{Colors.NC}")
+            elif line.startswith('@@'):
+                print(f"{Colors.CYAN}{line}{Colors.NC}")
+            else:
+                print(line)
+        if len(diff) > 50:
+            print(f"  ... ({len(diff) - 50} more lines)")
+        print()
+        
+        # Offer options
+        print("Options:")
+        print("  [W] Use workspace version (copy to repoconfig) [default]")
+        print("  [r] Use repoconfig version (copy to workspace)")
+        print("  [s] Skip")
         try:
-            response = input("  Overwrite local copy? [y/N] ").strip().lower()
+            response = input("Choice [W/r/s]: ").strip().lower() or 'w'
         except EOFError:
             return
-        if response != 'y':
-            return
-    
-    shutil.copy2(copilot_src, copilot_dest)
-    print(f"{Colors.GREEN}✓{Colors.NC} Copied copilot instructions to {copilot_dest}")
+        
+        if response == 'w':
+            # Push workspace to repoconfig
+            copilot_src.write_text(dest_content, encoding='utf-8')
+            print(f"{Colors.GREEN}[OK]{Colors.NC} Updated repoconfig with workspace version")
+        elif response == 'r':
+            # Pull repoconfig to workspace
+            copilot_dest.write_text(src_content, encoding='utf-8')
+            print(f"{Colors.GREEN}[OK]{Colors.NC} Updated workspace with repoconfig version")
+        else:
+            print(f"{Colors.YELLOW}[SKIP]{Colors.NC} Copilot instructions not synced")
+
 
 def cmd_repo_status(args):
     """Show which repos exist on this machine"""
     config = load_config()
     base_path = Path(get_base_path(config))
-    
+
     print(f"{Colors.BLUE}Repository Status (base: {base_path}){Colors.NC}")
-    print("━" * 60)
-    
+    print("-" * 60)
+
     present = missing = 0
     for repo in config['repos']:
-        target_path = base_path / repo['name']
+        # Handle nested paths like edge/src
+        target_path = base_path / repo['name'].replace('/', os.sep)
         if target_path.exists():
-            print(f"{Colors.GREEN}✓{Colors.NC} {repo['name']}")
+            print(f"{Colors.GREEN}[OK]{Colors.NC} {repo['name']}")
             present += 1
         else:
-            print(f"{Colors.RED}✗{Colors.NC} {repo['name']} {Colors.YELLOW}(missing){Colors.NC}")
+            print(f"{Colors.RED}[X]{Colors.NC} {repo['name']} {Colors.YELLOW}(missing){Colors.NC}")
             missing += 1
-    
-    print("━" * 60)
+
+    print("-" * 60)
     print(f"Present: {Colors.GREEN}{present}{Colors.NC} | Missing: {Colors.RED}{missing}{Colors.NC}")
     return 0
 
 def cmd_repo_scan(args):
-    """Scan directory and add all git repos"""
+    """Scan directory and add all git repos, including nested ones in enlistments"""
     config = load_config()
     scan_path = Path(args.path) if args.path else Path(get_base_path(config))
-    
+
     print(f"{Colors.BLUE}Scanning for git repositories in: {scan_path}{Colors.NC}")
-    print("━" * 60)
-    
+    print("-" * 60)
+
     added = 0
-    for entry in scan_path.iterdir():
-        if entry.is_dir() and (entry / '.git').exists():
-            print(f"Found: {entry}")
-            # Simulate args for add
-            class AddArgs:
-                path = str(entry)
-            cmd_repo_add(AddArgs())
-            added += 1
     
-    print("━" * 60)
+    def add_repo(path):
+        nonlocal added
+        print(f"Found: {path}")
+        class AddArgs:
+            pass
+        add_args = AddArgs()
+        add_args.path = str(path)
+        cmd_repo_add(add_args)
+        added += 1
+    
+    for entry in scan_path.iterdir():
+        if not entry.is_dir():
+            continue
+            
+        if (entry / '.git').exists():
+            # Top-level git repo
+            add_repo(entry)
+        elif (entry / '.gclient').exists():
+            # This is a gclient enlistment, only track src and depot_tools
+            print(f"{Colors.CYAN}Found enlistment: {entry.name}{Colors.NC}")
+            for subname in ['src', 'depot_tools']:
+                subentry = entry / subname
+                if subentry.is_dir() and (subentry / '.git').exists():
+                    add_repo(subentry)
+
+    print("-" * 60)
     print(f"Added {Colors.GREEN}{added}{Colors.NC} repositories")
     return 0
 
@@ -333,7 +418,7 @@ def cmd_repo_set_path(args):
     if args.os not in ('linux', 'darwin', 'windows'):
         print(f"{Colors.RED}Error: OS must be linux, darwin, or windows{Colors.NC}")
         return 1
-    
+
     config = load_config()
     config['defaultBasePaths'][args.os] = args.path
     save_config(config)
@@ -343,10 +428,17 @@ def cmd_repo_set_path(args):
 
 # ============ PYTHON COMMANDS ============
 
+def get_python_command():
+    """Get the Python command for this platform"""
+    if get_os_type() == 'windows':
+        return ['py']
+    return ['python3']
+
 def get_current_python_version():
     """Get the currently installed Python version"""
     try:
-        result = subprocess.run(['py', '--version'], capture_output=True, text=True)
+        cmd = get_python_command() + ['--version']
+        result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
             return result.stdout.strip()
         return None
@@ -356,34 +448,43 @@ def get_current_python_version():
 def cmd_python_update(args):
     """Update Python to the latest stable version"""
     os_type = get_os_type()
-    
+
     print(f'{Colors.BLUE}Checking Python installation...{Colors.NC}')
     current = get_current_python_version()
     if current:
         print(f'  Current: {Colors.CYAN}{current}{Colors.NC}')
-    
+
     if os_type == 'windows':
         print(f'{Colors.BLUE}Updating Python via winget...{Colors.NC}')
-        result = subprocess.run(['winget', 'upgrade', 'Python.Python.3.12'], capture_output=False)
-        if result.returncode != 0:
-            print(f'{Colors.YELLOW}No existing installation found, installing...{Colors.NC}')
-            result = subprocess.run(['winget', 'install', 'Python.Python.3.12', '--accept-package-agreements', '--accept-source-agreements'])
-        
-        if result.returncode == 0:
+        # Capture output to detect "no upgrade available"
+        result = subprocess.run(['winget', 'upgrade', 'Python.Python.3.12'], 
+                               capture_output=True, text=True)
+        if 'No available upgrade found' in result.stdout or 'No installed package found' in result.stdout:
+            if 'No installed package found' in result.stdout:
+                print(f'{Colors.YELLOW}Not installed, installing...{Colors.NC}')
+                result = subprocess.run(['winget', 'install', 'Python.Python.3.12', 
+                                        '--accept-package-agreements', '--accept-source-agreements'])
+                if result.returncode == 0:
+                    print(f'{Colors.GREEN}Python installed successfully{Colors.NC}')
+                    print(f'{Colors.YELLOW}Note: Restart your terminal for changes to take effect{Colors.NC}')
+                    return 0
+            else:
+                print(f'{Colors.GREEN}Python is already up to date{Colors.NC}')
+                return 0
+        elif result.returncode == 0:
             print(f'{Colors.GREEN}Python updated successfully{Colors.NC}')
-            print(f'{Colors.YELLOW}Note: You may need to restart your terminal{Colors.NC}')
+            print(f'{Colors.YELLOW}Note: Restart your terminal for changes to take effect{Colors.NC}')
             return 0
-        else:
-            print(f'{Colors.RED}Failed to update Python{Colors.NC}')
-            return 1
-            
+        print(f'{Colors.RED}Failed to update Python{Colors.NC}')
+        return 1
+
     elif os_type == 'darwin':
         print(f'{Colors.BLUE}Updating Python via Homebrew...{Colors.NC}')
         result = subprocess.run(['brew', 'upgrade', 'python@3.12'])
         if result.returncode != 0:
             result = subprocess.run(['brew', 'install', 'python@3.12'])
         return 0 if result.returncode == 0 else 1
-            
+
     else:
         print(f'{Colors.BLUE}Updating Python...{Colors.NC}')
         result = subprocess.run(['which', 'apt'], capture_output=True)
@@ -397,28 +498,28 @@ def cmd_python_update(args):
 def main():
     parser = argparse.ArgumentParser(description='Dev CLI - Development workflow tool')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
-    
+
     # repo subcommand
     repo_parser = subparsers.add_parser('repo', help='Manage tracked repositories')
     repo_sub = repo_parser.add_subparsers(dest='repo_command')
-    
+
     add_p = repo_sub.add_parser('add', help='Add a repository to tracking')
     add_p.add_argument('path', help='Path to the repository')
-    
+
     remove_p = repo_sub.add_parser('remove', help='Remove a repository from tracking')
     remove_p.add_argument('name', help='Name of the repository')
-    
+
     repo_sub.add_parser('list', help='List all tracked repositories')
     repo_sub.add_parser('sync', help='Clone missing repositories')
     repo_sub.add_parser('status', help='Show repo status on this machine')
-    
+
     scan_p = repo_sub.add_parser('scan', help='Scan and add all git repos')
     scan_p.add_argument('path', nargs='?', help='Path to scan')
-    
+
     setpath_p = repo_sub.add_parser('set-path', help='Set base path for an OS')
     setpath_p.add_argument('os', help='OS (linux/darwin/windows)')
     setpath_p.add_argument('path', help='Base path')
-    
+
 
     # python subcommand
     pyenv_parser = subparsers.add_parser('python', help='Python environment management')
@@ -426,7 +527,7 @@ def main():
     pyenv_sub.add_parser('update', help='Update Python to latest stable version')
 
     args = parser.parse_args()
-    
+
     if args.command == 'python':
         if args.python_command == 'update':
             return cmd_python_update(args)
@@ -448,8 +549,9 @@ def main():
             repo_parser.print_help()
     else:
         parser.print_help()
-    
+
     return 0
 
 if __name__ == '__main__':
     sys.exit(main())
+

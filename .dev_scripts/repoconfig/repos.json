@@ -4,14 +4,44 @@
   "defaultBasePaths": {
     "linux": "/workspace",
     "darwin": "/workspace",
-    "windows": "Q:\\dev\\edge"
+    "windows": "Q:\\dev"
   },
   "repos": [
     {
-      "name": "chromium.infra.build",
-      "remoteUrl": "https://chromium.googlesource.com/build",
-      "addedFrom": "/workspace/chromium.infra.build",
-      "addedAt": "2026-01-09T01:26:37Z"
+      "name": "cr/depot_tools",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools.cr-contrib",
+      "addedFrom": "Q:\\dev\\cr\\depot_tools",
+      "addedAt": "2026-01-09T02:18:56.524895+00:00"
+    },
+    {
+      "name": "cr/src",
+      "remoteUrl": "https://chromium.googlesource.com/chromium/src.git",
+      "addedFrom": "Q:\\dev\\cr\\src",
+      "addedAt": "2026-01-09T02:18:56.581971+00:00"
+    },
+    {
+      "name": "edge/src",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.src",
+      "addedFrom": "Q:\\dev\\edge\\src",
+      "addedAt": "2026-01-09T02:18:56.765308+00:00"
+    },
+    {
+      "name": "es",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es",
+      "addedFrom": "Q:\\dev\\es",
+      "addedAt": "2026-01-09T02:18:56.899259+00:00"
+    },
+    {
+      "name": "releasebot",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es.releasebot",
+      "addedFrom": "Q:\\dev\\releasebot",
+      "addedAt": "2026-01-09T02:18:57.136853+00:00"
+    },
+    {
+      "name": "sealion",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es.sealion",
+      "addedFrom": "Q:\\dev\\sealion",
+      "addedAt": "2026-01-09T02:18:57.197458+00:00"
     }
   ]
 }

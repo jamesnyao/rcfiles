@@ -65,7 +65,7 @@ try {
   Invoke-Expression (& { (zoxide init --cmd cd powershell | Out-String) })
 }
 
-$env:PATH_BASE = $env:PATH
+$env:OLD_PATH = $env:PATH
 if ($env:COMPUTERNAME -like "CPC-jamya*") {
   $env:MachineType = "dev-cloud"
   $env:Dev = "Q:\dev"
@@ -86,12 +86,11 @@ elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
 }
 $env:DEPOT_TOOLS_PREVIEW_RING = 1
 
-$env:PATH_PREFIX="C:\Users\jamyao\scripts"
 
 function Set-Downstream() {
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:DownEnlistRoot\depot_tools"
-  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
+  $env:PATH = "$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
   $env:REPROXY_CFG = "$env:DownEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:DownEnlistRoot\src"
@@ -101,7 +100,7 @@ function Set-Downstream() {
 function Set-Upstream() {
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:UpEnlistRoot\depot_tools"
-  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
+  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
   $env:REPROXY_CFG = "$env:UpEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:UpEnlistRoot\src"
@@ -110,16 +109,16 @@ function Set-Upstream() {
 
 function Set-Internal() {
   # Set up depot_tools
-  $env:DEPOT_TOOLS_PATH = "$env:Dev\depot_tools"
-  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:PATH_BASE"
+  $env:DEPOT_TOOLS_PATH = "$env:Dev\edge\depot_tools"
+  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   Set-Location $env:Dev
   Write-Output "Depot Tools set up for $env:Dev"
 }
 
 function Set-CrDT() {
   # Set up depot_tools
-  $env:DEPOT_TOOLS_PATH = "$env:Dev\depot_tools.cr"
-  $env:PATH = "$env:PATH_PREFIX;$env:DEPOT_TOOLS_PATH;$env:PATH_BASE"
+  $env:DEPOT_TOOLS_PATH = "$env:Dev\cr\depot_tools"
+  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:OLD_PATH"
   $env:SISO_PATH = "$env:Dev\infra\go\src\infra\build\siso\siso"
   #Set-Location "$env:Dev\infra"
   Write-Output "Depot Tools set up for $env:Dev"
@@ -153,7 +152,7 @@ function Set-ProdRE() {
 function Set-Clean() {
   # No depot_tools
   $env:DEPOT_TOOLS_PATH = ""
-  $env:PATH = "$env:PATH_PREFIX;$env:PATH_BASE"
+  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:OLD_PATH"
   $env:SISO_LIMITS = ""
   $env:SISO_PATH = ""
   $env:SISO_EXPERIMENTS = ""
@@ -174,5 +173,5 @@ Set-Internal
 
 # Dev CLI
 function dev {
-    python "$env:USERPROFILE\.dev_scripts\dev.py" @args
+    py "$env:USERPROFILE\.dev_scripts\dev.py" @args
 }

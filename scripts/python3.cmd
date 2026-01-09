@@ -14,14 +14,12 @@ REM Prefer .bat over .exe on Windows shims
 for %%I in (python3.bat python3.exe) do (
   set "CAND=%%~$PATH:I"
   if defined CAND (
-    REM Skip depot_tools at C:\dev\depot_tools\scripts
-    if /I "!CAND:~0,26!"=="C:\dev\depot_tools\scripts" (
-      set "CAND="
-    )
+    REM Skip depot_tools scripts directory (any drive)
+    echo !CAND! | findstr /I /C:"\depot_tools\scripts\python3" >nul && set "CAND="
 
     REM Skip Windows Store stubs
-    if /I "!CAND:~0,51!"=="C:\Users\jamyao\AppData\Local\Microsoft\WindowsApps" (
-      set "CAND="
+    if defined CAND (
+      echo !CAND! | findstr /I /C:"\Microsoft\WindowsApps\" >nul && set "CAND="
     )
 
     REM Skip self
@@ -33,7 +31,6 @@ for %%I in (python3.bat python3.exe) do (
 )
 
 :found_done
-echo DepoToolsShimCheck: FOUND="!FOUND!"
 
 if defined FOUND (
   "!FOUND!" %*
