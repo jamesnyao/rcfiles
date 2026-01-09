@@ -304,7 +304,7 @@ def cmd_repo_sync(args):
     base_path = Path(get_base_path(config))
     
     # First, merge copilot instructions (before syncing rcfiles so changes get pushed)
-    merge_copilot_instructions_to_repoconfig(base_path)
+    copilot_updated_from_workspace = merge_copilot_instructions_to_repoconfig(base_path)
     
     # Now sync rcfiles (pull, commit local changes including copilot, push)
     sync_rcfiles()
@@ -354,7 +354,11 @@ def cmd_repo_sync(args):
     print(f"Synced: {Colors.GREEN}{synced}{Colors.NC} | Skipped: {Colors.YELLOW}{skipped}{Colors.NC} | Failed: {Colors.RED}{failed}{Colors.NC}")
 
     # Apply copilot instructions to workspace (repoconfig may have updates from remote)
-    apply_copilot_instructions_to_workspace(base_path)
+    copilot_updated_from_remote = apply_copilot_instructions_to_workspace(base_path)
+    
+    # Show "up to date" only if no updates happened in either direction
+    if not copilot_updated_from_workspace and not copilot_updated_from_remote:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
 
     return 0
 
@@ -400,12 +404,13 @@ def merge_copilot_instructions_to_repoconfig(base_path):
     """Copy workspace copilot instructions to repoconfig (before rcfiles push).
 
     Simple strategy: workspace is source of truth, no complex merging.
+    Returns True if changes were made, False otherwise.
     """
     copilot_src = CONFIG_DIR / 'copilot-instructions.md'
     copilot_dest = base_path / '.github' / 'copilot-instructions.md'
 
     if not copilot_dest.exists():
-        return  # No workspace file
+        return False  # No workspace file
 
     dest_content = copilot_dest.read_text(encoding='utf-8')
     
@@ -413,7 +418,7 @@ def merge_copilot_instructions_to_repoconfig(base_path):
     if has_real_conflict_markers(dest_content):
         print(f"{Colors.YELLOW}[WARN]{Colors.NC} Workspace copilot-instructions.md has conflict markers")
         print("  Please resolve them first, then run 'dev repo sync' again")
-        return
+        return False
     
     src_content = copilot_src.read_text(encoding='utf-8') if copilot_src.exists() else ''
     
@@ -422,16 +427,19 @@ def merge_copilot_instructions_to_repoconfig(base_path):
     dest_normalized = dest_content.replace('\r\n', '\n')
     
     if src_normalized == dest_normalized:
-        return  # Already in sync
+        return False  # Already in sync
     
     # Copy from workspace to repoconfig (workspace is source of truth)
     copilot_src.write_text(dest_content, encoding='utf-8')
+    print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from workspace")
+    return True
 
 
 def apply_copilot_instructions_to_workspace(base_path):
     """Apply repoconfig copilot instructions to workspace (after rcfiles pull).
 
     Simple strategy: repoconfig is synced from remote, apply to workspace.
+    Returns True if changes were made, False otherwise.
     """
     copilot_src = CONFIG_DIR / 'copilot-instructions.md'
     copilot_dest = base_path / '.github' / 'copilot-instructions.md'
@@ -439,7 +447,7 @@ def apply_copilot_instructions_to_workspace(base_path):
     copilot_dest.parent.mkdir(parents=True, exist_ok=True)
 
     if not copilot_src.exists():
-        return
+        return False
     
     src_content = copilot_src.read_text(encoding='utf-8')
     
@@ -448,7 +456,7 @@ def apply_copilot_instructions_to_workspace(base_path):
         print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts in repoconfig")
         print(f"  File: {copilot_src}")
         print("  Please resolve, then run 'dev repo sync' again")
-        return
+        return False
     
     dest_content = copilot_dest.read_text(encoding='utf-8') if copilot_dest.exists() else ''
     
@@ -457,13 +465,12 @@ def apply_copilot_instructions_to_workspace(base_path):
     dest_normalized = dest_content.replace('\r\n', '\n')
     
     if src_normalized == dest_normalized:
-        if src_content:
-            print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
-        return
+        return False  # No changes needed
 
     # Copy from repoconfig to workspace
     copilot_dest.write_text(src_content, encoding='utf-8')
-    print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated")
+    print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from remote")
+    return True
 
 
 def cmd_repo_status(args):
