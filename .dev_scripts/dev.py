@@ -237,8 +237,30 @@ def cmd_repo_list(args):
     print(f"Total: {Colors.GREEN}{len(config['repos'])}{Colors.NC} repositories")
     return 0
 
+def sync_rcfiles():
+    """Pull latest rcfiles (dev_scripts config)"""
+    print(f"{Colors.BLUE}Updating rcfiles (dev_scripts)...{Colors.NC}")
+    success, _ = run_git(SCRIPT_DIR, 'pull', '--ff-only')
+    if success:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles updated")
+    else:
+        # Try fetch + status to see if we're ahead or have conflicts
+        run_git(SCRIPT_DIR, 'fetch')
+        success, status = run_git(SCRIPT_DIR, 'status', '--porcelain', '-b')
+        if 'ahead' in status:
+            print(f"{Colors.YELLOW}[SKIP]{Colors.NC} rcfiles has local commits (ahead of origin)")
+        elif status.strip():
+            print(f"{Colors.YELLOW}[SKIP]{Colors.NC} rcfiles has local changes")
+        else:
+            print(f"{Colors.RED}[X]{Colors.NC} Failed to update rcfiles")
+
+
 def cmd_repo_sync(args):
     """Clone missing repositories and check for stale branches"""
+    # First, update rcfiles itself
+    sync_rcfiles()
+    print()
+
     config = load_config()
     base_path = Path(get_base_path(config))
 
