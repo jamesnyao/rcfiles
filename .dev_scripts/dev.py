@@ -238,32 +238,37 @@ def cmd_repo_list(args):
     return 0
 
 def sync_rcfiles():
-    """Pull latest rcfiles (dev_scripts config)"""
-    print(f"{Colors.BLUE}Updating rcfiles (dev_scripts)...{Colors.NC}")
+    """Sync rcfiles (dev_scripts config) - pull, auto-commit, and push"""
+    print(f"{Colors.BLUE}Syncing rcfiles (dev_scripts)...{Colors.NC}")
     
-    # Check for uncommitted changes first - stash them to be safe
-    success, status = run_git(SCRIPT_DIR, 'status', '--porcelain')
-    has_uncommitted = success and status.strip()
-    if has_uncommitted:
-        run_git(SCRIPT_DIR, 'stash', 'push', '-m', 'auto-stash before sync')
+    # Check for local changes first
+    _, status = run_git(SCRIPT_DIR, 'status', '--porcelain')
+    has_local_changes = bool(status.strip())
     
-    success, _ = run_git(SCRIPT_DIR, 'pull', '--ff-only')
-    if success:
-        print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles updated")
-    else:
-        # Try fetch + status to see if we're ahead or have conflicts
-        run_git(SCRIPT_DIR, 'fetch')
-        success, status = run_git(SCRIPT_DIR, 'status', '--porcelain', '-b')
-        if 'ahead' in status:
-            print(f"{Colors.YELLOW}[SKIP]{Colors.NC} rcfiles has local commits (ahead of origin)")
-        elif status.strip():
-            print(f"{Colors.YELLOW}[SKIP]{Colors.NC} rcfiles has local changes")
+    if has_local_changes:
+        # Auto-commit local changes
+        run_git(SCRIPT_DIR, 'add', '-A')
+        import socket
+        hostname = socket.gethostname()
+        run_git(SCRIPT_DIR, 'commit', '-m', f'Auto-sync from {hostname}')
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Committed local changes")
+    
+    # Pull with rebase to integrate remote changes
+    success, output = run_git(SCRIPT_DIR, 'pull', '--rebase', '--autostash')
+    if not success:
+        print(f"{Colors.RED}[X]{Colors.NC} Failed to pull rcfiles: {output}")
+        return
+    
+    # Check if we have commits to push
+    _, status = run_git(SCRIPT_DIR, 'status', '--porcelain', '-b')
+    if 'ahead' in status:
+        success, output = run_git(SCRIPT_DIR, 'push')
+        if success:
+            print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles synced (pushed changes)")
         else:
-            print(f"{Colors.RED}[X]{Colors.NC} Failed to update rcfiles")
-    
-    # Restore stashed changes if any
-    if has_uncommitted:
-        run_git(SCRIPT_DIR, 'stash', 'pop')
+            print(f"{Colors.RED}[X]{Colors.NC} Failed to push rcfiles: {output}")
+    else:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles synced")
 
 
 def cmd_repo_sync(args):
@@ -293,7 +298,7 @@ def cmd_repo_sync(args):
         target_path = base_path / name.replace('/', os.sep)
 
         if target_path.exists():
-            print(f"{Colors.YELLOW}[SKIP] Skipping {name} (already exists){Colors.NC}")
+            print(f"{Colors.GREEN}[OK]{Colors.NC} {name}")
             check_stale_branch(target_path, name)
             skipped += 1
             continue
@@ -323,75 +328,196 @@ def cmd_repo_sync(args):
     return 0
 
 def sync_copilot_instructions(base_path):
-    """Merge copilot instructions using git merge for smart conflict resolution"""
-    import tempfile
+    """Merge copilot instructions using git's 3-way merge for automatic conflict resolution.
+    
+    Auto-merges when possible. Leaves conflict markers for Copilot to resolve when needed.
+    Never prompts for user input.
+    """
+    import difflib
+    
     copilot_src = CONFIG_DIR / 'copilot-instructions.md'
     copilot_dest = base_path / '.github' / 'copilot-instructions.md'
 
     copilot_dest.parent.mkdir(parents=True, exist_ok=True)
-
+    
     src_content = copilot_src.read_text(encoding='utf-8') if copilot_src.exists() else ''
     dest_content = copilot_dest.read_text(encoding='utf-8') if copilot_dest.exists() else ''
 
-    if src_content == dest_content:
+    # Normalize line endings for comparison
+    src_normalized = src_content.replace('\r\n', '\n')
+    dest_normalized = dest_content.replace('\r\n', '\n')
+
+    if src_normalized == dest_normalized:
         if src_content:
             print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
         return
 
-    print(f"{Colors.YELLOW}[WARN] Copilot instructions differ{Colors.NC}")
+    # If one is empty, use the other
+    if not src_content.strip():
+        copilot_src.write_text(dest_content, encoding='utf-8')
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions synced from workspace")
+        return
     
-    # Use git merge-file for 3-way merge
-    # Get the last committed version from rcfiles as the base
-    success, base_content = run_git(SCRIPT_DIR, 'show', 'HEAD:repoconfig/copilot-instructions.md')
-    if not success:
-        base_content = ''  # No common ancestor, treat as new file
+    if not dest_content.strip():
+        copilot_dest.write_text(src_content, encoding='utf-8')
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions synced to workspace")
+        return
+
+    # Try git merge-file for automatic 3-way merge
+    merged_content, has_conflicts = try_git_merge(src_content, dest_content)
     
-    # Create temp files for merge
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
-        base_file = tmpdir / 'base.md'
-        src_file = tmpdir / 'repoconfig.md'
-        dest_file = tmpdir / 'workspace.md'
-        
-        base_file.write_text(base_content, encoding='utf-8')
-        src_file.write_text(src_content, encoding='utf-8')
-        dest_file.write_text(dest_content, encoding='utf-8')
-        
-        # git merge-file: merges src into dest using base as common ancestor
-        # -p outputs to stdout, --diff3 shows base in conflicts
-        result = subprocess.run(
-            ['git', 'merge-file', '-p', '--diff3',
-             str(dest_file), str(base_file), str(src_file)],
-            capture_output=True, text=True
-        )
-        
-        merged_content = result.stdout
-        has_conflicts = result.returncode != 0
-        
-        if not has_conflicts and merged_content == dest_content:
-            # Clean merge, workspace is superset - update repoconfig
-            copilot_src.write_text(dest_content, encoding='utf-8')
-            print(f"{Colors.GREEN}[OK]{Colors.NC} Auto-merged (workspace version is superset)")
-            return
-        elif not has_conflicts and merged_content == src_content:
-            # Clean merge, repoconfig is superset - update workspace
-            copilot_dest.write_text(src_content, encoding='utf-8')
-            print(f"{Colors.GREEN}[OK]{Colors.NC} Auto-merged (repoconfig version is superset)")
-            return
-        elif not has_conflicts:
-            # Clean merge with actual merging from both
-            print(f"{Colors.GREEN}[OK]{Colors.NC} Auto-merged changes from both versions")
-            copilot_dest.write_text(merged_content, encoding='utf-8')
-            copilot_src.write_text(merged_content, encoding='utf-8')
-            return
-        
-        # Has conflicts - write merged content with conflict markers to workspace
-        print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Merge conflicts detected")
-        print("  Conflict markers written to workspace file")
-        print("  Use Copilot or editor to resolve, then run 'dev repo sync' again")
+    if merged_content is not None and not has_conflicts:
+        # Auto-merge succeeded with no conflicts
+        copilot_src.write_text(merged_content, encoding='utf-8')
         copilot_dest.write_text(merged_content, encoding='utf-8')
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions auto-merged")
+        return
+    
+    if merged_content is not None and has_conflicts:
+        # Merge has conflicts - write to workspace with markers for Copilot to resolve
+        copilot_dest.write_text(merged_content, encoding='utf-8')
+        print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
+        print("  Conflict markers written to .github/copilot-instructions.md")
+        print("  Use Copilot to resolve, then run 'dev repo sync' again")
+        return
+
+    # Fallback: git merge not available - do section-based merge
+    merged_content, has_conflicts = section_merge(src_content, dest_content)
+    
+    if not has_conflicts:
+        copilot_src.write_text(merged_content, encoding='utf-8')
+        copilot_dest.write_text(merged_content, encoding='utf-8')
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions auto-merged (section-based)")
+    else:
+        copilot_dest.write_text(merged_content, encoding='utf-8')
+        print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
+        print("  Conflict markers written to .github/copilot-instructions.md")
+        print("  Use Copilot to resolve, then run 'dev repo sync' again")
 
 
+def section_merge(src_content, dest_content):
+    """Merge markdown files by section (## headers).
+    
+    Merges non-conflicting sections automatically.
+    Returns (merged_content, has_conflicts).
+    """
+    import re
+    
+    def parse_sections(content):
+        """Parse markdown into sections by ## headers."""
+        sections = {}
+        current_header = '__preamble__'
+        current_lines = []
+        
+        for line in content.splitlines(keepends=True):
+            if line.startswith('## '):
+                if current_lines:
+                    sections[current_header] = ''.join(current_lines)
+                current_header = line.strip()
+                current_lines = [line]
+            else:
+                current_lines.append(line)
+        
+        if current_lines:
+            sections[current_header] = ''.join(current_lines)
+        
+        return sections
+    
+    src_sections = parse_sections(src_content)
+    dest_sections = parse_sections(dest_content)
+    
+    all_headers = []
+    seen = set()
+    # Preserve order from both, src first
+    for h in list(src_sections.keys()) + list(dest_sections.keys()):
+        if h not in seen:
+            all_headers.append(h)
+            seen.add(h)
+    
+    merged_parts = []
+    has_conflicts = False
+    
+    for header in all_headers:
+        src_sec = src_sections.get(header, '')
+        dest_sec = dest_sections.get(header, '')
+        
+        if src_sec == dest_sec:
+            # Identical - use either
+            merged_parts.append(src_sec if src_sec else dest_sec)
+        elif not src_sec:
+            # Only in dest (workspace) - keep it
+            merged_parts.append(dest_sec)
+        elif not dest_sec:
+            # Only in src (repoconfig) - add it
+            merged_parts.append(src_sec)
+        else:
+            # Both have content but different - conflict
+            has_conflicts = True
+            conflict = f"<<<<<<< repoconfig\n{src_sec.rstrip()}\n=======\n{dest_sec.rstrip()}\n>>>>>>> workspace\n\n"
+            merged_parts.append(conflict)
+    
+    return ''.join(merged_parts), has_conflicts
+
+
+def try_git_merge(src_content, dest_content):
+    """Attempt 3-way merge using git merge-file.
+    
+    Uses the common ancestor (LCS) as base for merge.
+    Returns (merged_content, has_conflicts) or (None, False) if git unavailable.
+    """
+    import subprocess
+    import tempfile
+    import difflib
+    
+    # Find common base using longest common subsequence of lines
+    src_lines = src_content.splitlines(keepends=True)
+    dest_lines = dest_content.splitlines(keepends=True)
+    
+    matcher = difflib.SequenceMatcher(None, src_lines, dest_lines)
+    base_lines = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == 'equal':
+            base_lines.extend(src_lines[i1:i2])
+    base_content = ''.join(base_lines)
+    
+    # If no common content, can't do 3-way merge meaningfully
+    if not base_content.strip():
+        return None, False
+    
+    try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_file = Path(tmpdir) / 'base.md'
+            src_file = Path(tmpdir) / 'repoconfig.md'
+            dest_file = Path(tmpdir) / 'workspace.md'
+            
+            base_file.write_text(base_content, encoding='utf-8')
+            src_file.write_text(src_content, encoding='utf-8')
+            dest_file.write_text(dest_content, encoding='utf-8')
+            
+            # git merge-file modifies dest_file in place
+            # Returns 0 on clean merge, >0 on conflicts, <0 on error
+            result = subprocess.run(
+                ['git', 'merge-file', '-p', 
+                 '--marker-size=7',
+                 '-L', 'repoconfig', '-L', 'base', '-L', 'workspace',
+                 str(src_file), str(base_file), str(dest_file)],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode < 0:
+                return None, False  # Error, fall back to manual
+            
+            merged = result.stdout
+            has_conflicts = result.returncode > 0 or '<<<<<<<' in merged
+            
+            return merged, has_conflicts
+            
+    except FileNotFoundError:
+        # git not available
+        return None, False
+    except Exception:
+        return None, False
 
 def cmd_repo_status(args):
     """Show which repos exist on this machine"""
