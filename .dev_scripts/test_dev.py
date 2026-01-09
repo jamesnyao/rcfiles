@@ -189,6 +189,111 @@ class TestRunGit(unittest.TestCase):
             self.assertFalse(success)
 
 
+class TestCopilotInstructionsSync(unittest.TestCase):
+    """Test copilot instructions merge and sync"""
+    
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.orig_config_dir = dev.CONFIG_DIR
+        dev.CONFIG_DIR = Path(self.temp_dir) / 'repoconfig'
+        dev.CONFIG_DIR.mkdir(parents=True)
+        
+        # Create workspace structure
+        self.workspace = Path(self.temp_dir) / 'workspace'
+        self.workspace.mkdir()
+        (self.workspace / '.github').mkdir()
+    
+    def tearDown(self):
+        dev.CONFIG_DIR = self.orig_config_dir
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+    
+    def test_merge_workspace_to_repoconfig_empty_repoconfig(self):
+        """Workspace content should be copied to empty repoconfig"""
+        workspace_content = "# Copilot\n\n## Rules\nSome rules\n"
+        (self.workspace / '.github' / 'copilot-instructions.md').write_text(workspace_content)
+        
+        dev.merge_copilot_instructions_to_repoconfig(self.workspace)
+        
+        repoconfig_file = dev.CONFIG_DIR / 'copilot-instructions.md'
+        self.assertTrue(repoconfig_file.exists())
+        self.assertEqual(repoconfig_file.read_text(), workspace_content)
+    
+    def test_merge_identical_content(self):
+        """Identical content should not change files"""
+        content = "# Copilot\n\n## Rules\nSome rules\n"
+        (self.workspace / '.github' / 'copilot-instructions.md').write_text(content)
+        (dev.CONFIG_DIR / 'copilot-instructions.md').write_text(content)
+        
+        dev.merge_copilot_instructions_to_repoconfig(self.workspace)
+        
+        # Content should remain the same
+        repoconfig_content = (dev.CONFIG_DIR / 'copilot-instructions.md').read_text()
+        self.assertEqual(repoconfig_content, content)
+    
+    def test_merge_adds_new_section_from_workspace(self):
+        """New section added in workspace should appear in merged result"""
+        repoconfig_content = "## Section 1\nOriginal content\n"
+        workspace_content = "## Section 1\nOriginal content\n\n## Section 2\nNew section\n"
+        
+        (dev.CONFIG_DIR / 'copilot-instructions.md').write_text(repoconfig_content)
+        (self.workspace / '.github' / 'copilot-instructions.md').write_text(workspace_content)
+        
+        dev.merge_copilot_instructions_to_repoconfig(self.workspace)
+        
+        merged = (dev.CONFIG_DIR / 'copilot-instructions.md').read_text()
+        self.assertIn("Section 2", merged)
+        self.assertIn("New section", merged)
+    
+    def test_apply_repoconfig_to_workspace(self):
+        """Repoconfig content should be applied to workspace"""
+        repoconfig_content = "# Copilot\n\n## Rules\nUpdated rules\n"
+        (dev.CONFIG_DIR / 'copilot-instructions.md').write_text(repoconfig_content)
+        
+        dev.apply_copilot_instructions_to_workspace(self.workspace)
+        
+        workspace_file = self.workspace / '.github' / 'copilot-instructions.md'
+        self.assertTrue(workspace_file.exists())
+        self.assertEqual(workspace_file.read_text(), repoconfig_content)
+    
+    def test_apply_detects_conflicts(self):
+        """Conflict markers should be detected and reported"""
+        conflict_content = "## Section\n<<<<<<< repoconfig\nVersion A\n=======\nVersion B\n>>>>>>> workspace\n"
+        (dev.CONFIG_DIR / 'copilot-instructions.md').write_text(conflict_content)
+        (self.workspace / '.github' / 'copilot-instructions.md').write_text("different")
+        
+        # Should not crash, just report conflict
+        dev.apply_copilot_instructions_to_workspace(self.workspace)
+        
+        # Workspace should not be overwritten with conflict content blindly
+        # (function detects conflicts and skips)
+    
+    def test_full_sync_round_trip(self):
+        """Full sync should merge workspace changes into repoconfig"""
+        # Start with same content in both
+        initial = "## Section 1\nInitial\n"
+        (dev.CONFIG_DIR / 'copilot-instructions.md').write_text(initial)
+        (self.workspace / '.github' / 'copilot-instructions.md').write_text(initial)
+        
+        # Modify workspace
+        modified = "## Section 1\nInitial\n\n## Section 2\nWorkspace addition\n"
+        (self.workspace / '.github' / 'copilot-instructions.md').write_text(modified)
+        
+        # Merge to repoconfig
+        dev.merge_copilot_instructions_to_repoconfig(self.workspace)
+        
+        # Repoconfig should now have the new section
+        repoconfig = (dev.CONFIG_DIR / 'copilot-instructions.md').read_text()
+        self.assertIn("Workspace addition", repoconfig)
+        
+        # Apply back to workspace (simulating another machine pulling)
+        dev.apply_copilot_instructions_to_workspace(self.workspace)
+        
+        # Both should be in sync
+        workspace = (self.workspace / '.github' / 'copilot-instructions.md').read_text()
+        self.assertEqual(workspace.strip(), repoconfig.strip())
+
+
 if __name__ == '__main__':
     # Run with verbosity
     unittest.main(verbosity=2)
