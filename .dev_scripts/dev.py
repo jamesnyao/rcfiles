@@ -356,8 +356,12 @@ def cmd_repo_sync(args):
     # Apply copilot instructions to workspace (repoconfig may have updates from remote)
     copilot_updated_from_remote = apply_copilot_instructions_to_workspace(base_path)
     
-    # Show "up to date" only if no updates happened in either direction
-    if not copilot_updated_from_workspace and not copilot_updated_from_remote:
+    # Show copilot sync status at the end
+    if copilot_updated_from_workspace:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from workspace")
+    elif copilot_updated_from_remote:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from remote")
+    else:
         print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
 
     return 0
@@ -431,7 +435,6 @@ def merge_copilot_instructions_to_repoconfig(base_path):
     
     # Copy from workspace to repoconfig (workspace is source of truth)
     copilot_src.write_text(dest_content, encoding='utf-8')
-    print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from workspace")
     return True
 
 
@@ -469,7 +472,6 @@ def apply_copilot_instructions_to_workspace(base_path):
 
     # Copy from repoconfig to workspace
     copilot_dest.write_text(src_content, encoding='utf-8')
-    print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from remote")
     return True
 
 
