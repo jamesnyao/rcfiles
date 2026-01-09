@@ -237,4 +237,3 @@ The python shim (`~/.dev_scripts/python3.cmd`) skips depot_tools\scripts and Win
 Instead, if you need to update a function or alias after modifying the profile:
 - Define the function/alias directly in the current session
 - Example: `function dev { python3 "$env:USERPROFILE\.dev_scripts\dev.py" @args }`
-sync test marker
