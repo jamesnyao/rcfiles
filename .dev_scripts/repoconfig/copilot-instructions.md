@@ -12,7 +12,7 @@ Review any deletions to this file - unless the information is no longer accurate
 **CONTINUOUSLY monitor a running build for errors - only interrupt if necessary.** 
 Continuously monitor the build for errors by checking the terminal output every 30 seconds, if timeouts are detected and cause the build to fail, restart the build. If other errors are detected, make the appropriate changes to fix the errors and restart the build. Check for build logs in `edge/src/out/siso*`.
 
-**ALWAYS run tests after modifying `~/.dev_scripts/`.** If any file in the `~/.dev_scripts/` directory (including `dev.py`, `test_dev.py`, or any repoconfig files) is modified, you MUST run `python3 ~/.dev_scripts/test_dev.py` and ensure ALL tests pass before considering the change complete. This is non-negotiable.
+**ALWAYS run tests after modifying `~/.dev_scripts/`.** If any file in the `~/.dev_scripts/` directory (including `dev.py`, `test_dev.py`, or any repoconfig files) is modified, you MUST run `python3 ~/.dev_scripts/test_dev.py` and ensure ALL tests pass before considering the change complete. This is non-negotiable..
 
 ## Workspace Paths
 
