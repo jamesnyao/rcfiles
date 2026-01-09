@@ -138,6 +138,7 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
     ├── repos.json              # Tracked repos config
     └── copilot-instructions.md # Synced copilot instructions
 ```
+<<<<<<< repoconfig
 =======
 ## Quick Reference
 
@@ -168,6 +169,9 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
 >>>>>>> workspace
 
 <<<<<<< repoconfig
+=======
+
+>>>>>>> workspace
 ## Dev CLI (`dev` command)
 
 A cross-platform development workflow tool for managing repositories across machines. Located at `~/.dev_scripts/dev.py`.
