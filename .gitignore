@@ -20,3 +20,6 @@
 !.dev_scripts/*
 !.dev_scripts/repoconfig/
 !.dev_scripts/repoconfig/*
+
+# Exclude sensitive files
+.dev_scripts/repoconfig/ado_pat.txt

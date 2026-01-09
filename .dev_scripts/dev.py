@@ -28,6 +28,7 @@ class Colors:
 SCRIPT_DIR = Path(__file__).parent.resolve()
 CONFIG_DIR = SCRIPT_DIR / 'repoconfig'
 CONFIG_FILE = CONFIG_DIR / 'repos.json'
+ADO_PAT_FILE = CONFIG_DIR / 'ado_pat.txt'
 
 def get_os_type():
     system = platform.system().lower()
@@ -768,6 +769,64 @@ def cmd_test(args):
     return result.returncode
 
 
+# =============================================================================
+# ADO (Azure DevOps) Commands
+# =============================================================================
+
+def get_ado_pat():
+    """Get the stored ADO PAT, or None if not set"""
+    if ADO_PAT_FILE.exists():
+        return ADO_PAT_FILE.read_text().strip()
+    return None
+
+def cmd_ado_set_pat(args):
+    """Set the Azure DevOps PAT"""
+    pat = args.pat
+    if not pat:
+        # Prompt for PAT if not provided
+        try:
+            import getpass
+            pat = getpass.getpass("Enter your Azure DevOps PAT: ").strip()
+        except EOFError:
+            print(f"{Colors.RED}Error: No PAT provided{Colors.NC}")
+            return 1
+    
+    if not pat:
+        print(f"{Colors.RED}Error: PAT cannot be empty{Colors.NC}")
+        return 1
+    
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    ADO_PAT_FILE.write_text(pat)
+    # Set file permissions to owner-only on Unix
+    if sys.platform != 'win32':
+        os.chmod(ADO_PAT_FILE, 0o600)
+    
+    print(f"{Colors.GREEN}[OK] ADO PAT saved to {ADO_PAT_FILE}{Colors.NC}")
+    print(f"     {Colors.YELLOW}Note: Keep this file secure and do not commit it.{Colors.NC}")
+    return 0
+
+def cmd_ado_show_pat(args):
+    """Show if ADO PAT is configured (not the actual value)"""
+    pat = get_ado_pat()
+    if pat:
+        masked = pat[:4] + '*' * (len(pat) - 8) + pat[-4:] if len(pat) > 8 else '****'
+        print(f"{Colors.GREEN}[OK] ADO PAT is configured: {masked}{Colors.NC}")
+        print(f"     Stored at: {ADO_PAT_FILE}")
+    else:
+        print(f"{Colors.YELLOW}ADO PAT is not configured{Colors.NC}")
+        print(f"     Run: dev ado set-pat")
+    return 0
+
+def cmd_ado_clear_pat(args):
+    """Clear the stored ADO PAT"""
+    if ADO_PAT_FILE.exists():
+        ADO_PAT_FILE.unlink()
+        print(f"{Colors.GREEN}[OK] ADO PAT cleared{Colors.NC}")
+    else:
+        print(f"{Colors.YELLOW}No ADO PAT was configured{Colors.NC}")
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description='Dev CLI - Development workflow tool')
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
@@ -799,6 +858,16 @@ def main():
     pyenv_sub = pyenv_parser.add_subparsers(dest='python_command')
     pyenv_sub.add_parser('update', help='Update Python to latest stable version')
 
+    # ado subcommand
+    ado_parser = subparsers.add_parser('ado', help='Azure DevOps integration')
+    ado_sub = ado_parser.add_subparsers(dest='ado_command')
+    
+    set_pat_p = ado_sub.add_parser('set-pat', help='Set Azure DevOps PAT')
+    set_pat_p.add_argument('pat', nargs='?', help='PAT value (will prompt if not provided)')
+    
+    ado_sub.add_parser('show-pat', help='Show if PAT is configured')
+    ado_sub.add_parser('clear-pat', help='Clear stored PAT')
+
     # Test command
     subparsers.add_parser('test', help='Run dev.py unit tests')
 
@@ -811,6 +880,16 @@ def main():
             return cmd_python_update(args)
         else:
             pyenv_parser.print_help()
+    elif args.command == 'ado':
+        cmd_map = {
+            'set-pat': cmd_ado_set_pat,
+            'show-pat': cmd_ado_show_pat,
+            'clear-pat': cmd_ado_clear_pat,
+        }
+        if args.ado_command in cmd_map:
+            return cmd_map[args.ado_command](args)
+        else:
+            ado_parser.print_help()
     elif args.command == 'repo':
         cmd_map = {
             'add': cmd_repo_add,
