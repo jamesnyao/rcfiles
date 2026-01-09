@@ -13,7 +13,6 @@ set "FOUND="
 REM Prefer .bat over .exe on Windows shims
 for %%I in (python3.bat python3.exe) do (
   set "CAND=%%~$PATH:I"
-  echo Checking "!CAND!"
   if defined CAND (
     REM Skip depot_tools python (any drive)
     echo !CAND! | findstr /I /c:"\depot_tools\python3" >nul && set "CAND="
