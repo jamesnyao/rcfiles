@@ -15,7 +15,7 @@ for %%I in (python3.bat python3.exe) do (
   set "CAND=%%~$PATH:I"
   if defined CAND (
     REM Skip depot_tools scripts directory (any drive)
-    echo !CAND! | findstr /I /C:"\depot_tools\scripts\python3" >nul && set "CAND="
+    echo !CAND! | findstr /I /C:"\depot_tools\python3" >nul && set "CAND="
 
     REM Skip Windows Store stubs
     if defined CAND (
@@ -31,6 +31,8 @@ for %%I in (python3.bat python3.exe) do (
 )
 
 :found_done
+
+echo "!FOUND!"
 
 if defined FOUND (
   "!FOUND!" %*

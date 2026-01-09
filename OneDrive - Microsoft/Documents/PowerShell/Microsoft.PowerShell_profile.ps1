@@ -92,7 +92,7 @@ function Set-Downstream() {
   $env:DEPOT_TOOLS_PATH = "$env:DownEnlistRoot\depot_tools"
   $env:PATH = "$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
-  $env:REPROXY_CFG = "$env:DownEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
+  #$env:REPROXY_CFG = "$env:DownEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:DownEnlistRoot\src"
   Write-Output "Depot Tools set up for Edge Downstream"
 }
@@ -102,7 +102,7 @@ function Set-Upstream() {
   $env:DEPOT_TOOLS_PATH = "$env:UpEnlistRoot\depot_tools"
   $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
-  $env:REPROXY_CFG = "$env:UpEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
+  #$env:REPROXY_CFG = "$env:UpEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:UpEnlistRoot\src"
   Write-Output "Depot Tools set up for Edge Upstream"
 }
@@ -159,20 +159,9 @@ function Set-Clean() {
   Write-Output "Clean PATH $env:Dev"
 }
 
-if ($env:MachineType -eq "dev-cloud") {
-  
-}
-else {
-
-}
-
-
-
-#Set-Clean
-Set-Internal
-
 # Dev CLI
 function dev {
     py "$env:USERPROFILE\.dev_scripts\dev.py" @args
 }
 
+Set-Downstream
