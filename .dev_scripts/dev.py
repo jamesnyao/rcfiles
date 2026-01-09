@@ -240,6 +240,13 @@ def cmd_repo_list(args):
 def sync_rcfiles():
     """Pull latest rcfiles (dev_scripts config)"""
     print(f"{Colors.BLUE}Updating rcfiles (dev_scripts)...{Colors.NC}")
+    
+    # Check for uncommitted changes first - stash them to be safe
+    success, status = run_git(SCRIPT_DIR, 'status', '--porcelain')
+    has_uncommitted = success and status.strip()
+    if has_uncommitted:
+        run_git(SCRIPT_DIR, 'stash', 'push', '-m', 'auto-stash before sync')
+    
     success, _ = run_git(SCRIPT_DIR, 'pull', '--ff-only')
     if success:
         print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles updated")
@@ -253,6 +260,10 @@ def sync_rcfiles():
             print(f"{Colors.YELLOW}[SKIP]{Colors.NC} rcfiles has local changes")
         else:
             print(f"{Colors.RED}[X]{Colors.NC} Failed to update rcfiles")
+    
+    # Restore stashed changes if any
+    if has_uncommitted:
+        run_git(SCRIPT_DIR, 'stash', 'pop')
 
 
 def cmd_repo_sync(args):
