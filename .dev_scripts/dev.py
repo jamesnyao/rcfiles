@@ -227,7 +227,7 @@ def cmd_repo_list(args):
         print("Use 'dev repo add <path>' to add a repository.")
         return 0
 
-    for repo in config['repos']:
+    for repo in sorted(config['repos'], key=lambda r: r['name']):
         print(f"  {repo['name']}")
         print(f"    Remote: {repo.get('remoteUrl', 'N/A')}")
         print(f"    Added: {repo.get('addedAt', 'Unknown')}")
@@ -294,7 +294,7 @@ def cmd_repo_sync(args):
 
     synced = skipped = failed = 0
 
-    for repo in config['repos']:
+    for repo in sorted(config['repos'], key=lambda r: r['name']):
         name = repo['name']
         url = repo.get('remoteUrl', '')
         # Handle nested paths like edge/src
@@ -620,7 +620,7 @@ def cmd_repo_status(args):
     print("-" * 60)
 
     present = missing = 0
-    for repo in config['repos']:
+    for repo in sorted(config['repos'], key=lambda r: r['name']):
         # Handle nested paths like edge/src
         target_path = base_path / repo['name'].replace('/', os.sep)
         if target_path.exists():
