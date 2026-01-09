@@ -332,6 +332,43 @@ def cmd_repo_sync(args):
     return 0
 
 
+def has_real_conflict_markers(content):
+    """Check for real git conflict markers (at start of line, not in examples).
+    
+    Real conflicts have markers at the start of a line like:
+    <<<<<<< branch
+    =======
+    >>>>>>> branch
+    
+    This avoids false positives from example text like `<<<<<<<` in backticks.
+    """
+    import re
+    # Match conflict markers at start of line (not preceded by backtick or in code block)
+    # Real markers: <<<<<<< followed by space/text, ======= alone, >>>>>>> followed by space/text
+    lines = content.split('\n')
+    in_code_block = False
+    
+    for line in lines:
+        stripped = line.strip()
+        # Track code blocks
+        if stripped.startswith('```'):
+            in_code_block = not in_code_block
+            continue
+        
+        if in_code_block:
+            continue
+            
+        # Check for conflict markers at start of line (allowing leading whitespace)
+        # But skip if the line contains backticks (inline code examples)
+        if '`' in line:
+            continue
+            
+        if re.match(r'^<{7}\s', line) or re.match(r'^={7}\s*$', line) or re.match(r'^>{7}\s', line):
+            return True
+    
+    return False
+
+
 def merge_copilot_instructions_to_repoconfig(base_path):
     """Merge workspace copilot instructions into repoconfig (before rcfiles push).
     
@@ -396,9 +433,9 @@ def apply_copilot_instructions_to_workspace(base_path):
             print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
         return
     
-    # Check for conflict markers in either file
-    has_src_conflicts = '<<<<<<<' in src_content
-    has_dest_conflicts = '<<<<<<<' in dest_content
+    # Check for conflict markers in either file (real conflicts start at beginning of line)
+    has_src_conflicts = has_real_conflict_markers(src_content)
+    has_dest_conflicts = has_real_conflict_markers(dest_content)
     
     if has_src_conflicts or has_dest_conflicts:
         print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts")
