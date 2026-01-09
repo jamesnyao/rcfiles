@@ -16,7 +16,7 @@ for %%I in (python3.bat python3.exe) do (
 
   REM Skip depot_tools python (any drive)
   if defined CAND (
-    echo !CAND! | findstr /I /c:"depot_tools\" >nul && set "CAND="
+    echo !CAND! | findstr /I /c:"depot_tools" >nul && set "CAND="
   )
 
   REM Skip Windows Store stubs
