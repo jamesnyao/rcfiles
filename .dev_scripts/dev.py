@@ -47,7 +47,10 @@ def save_config(config):
         json.dump(config, f, indent=2)
 
 def get_base_path(config):
-    return config['defaultBasePaths'].get(os.getenv('DEVCONFIG'))
+    devconfig = os.getenv('DEVCONFIG')
+    if devconfig is None:
+        raise ValueError('DEVCONFIG environment variable is missing')
+    return config['defaultBasePaths'].get(devconfig)
 
 def run_git(repo_path, *args):
     """Run git command and return output"""
