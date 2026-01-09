@@ -4,6 +4,14 @@ This workspace contains multiple repositories for Microsoft Edge infrastructure 
 Update this file with any relavant information that would help Copilot provide better suggestions.
 Review any deletions to this file - unless the information is no longer accurate.
 
+**If this file contains merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`), resolve them immediately.** Analyze both versions, preserve all valuable content from each side, fix any typos, and remove the conflict markers. Prefer the version with more detail or corrections. After resolving, ensure the file is valid markdown. (Note: The markers shown in this rule as examples are not actual conflicts.)
+
+## Critical Rules
+
+**NEVER interrupt a running build unless explicitly asked or there are actual errors.** When a build is in progress and has not generated errors, let it complete. Build interruptions waste significant time and resources.
+**CONTINUOUSLY monitor a running build for errors - only interrupt if necessary.** 
+Continuously monitor the build for errors by checking the terminal output every 30 seconds, if timeouts are detected and cause the build to fail, restart the build. If other errors are detected, make the appropriate changes to fix the errors and restart the build. Check for build logs in `edge/src/out/siso*`.
+
 ## Workspace Paths
 
 The workspace root differs by operating system:
