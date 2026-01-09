@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import platform
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -249,7 +250,39 @@ def cmd_repo_sync(args):
     
     print("━" * 60)
     print(f"Synced: {Colors.GREEN}{synced}{Colors.NC} | Skipped: {Colors.YELLOW}{skipped}{Colors.NC} | Failed: {Colors.RED}{failed}{Colors.NC}")
+    
+    # Sync copilot instructions
+    sync_copilot_instructions(base_path)
+    
     return 0
+
+def sync_copilot_instructions(base_path):
+    """Copy copilot instructions from config to target workspace"""
+    copilot_src = CONFIG_DIR / 'copilot-instructions.md'
+    copilot_dest = base_path / '.github' / 'copilot-instructions.md'
+    
+    if not copilot_src.exists():
+        return
+    
+    copilot_dest.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Check if destination exists and is different
+    if copilot_dest.exists():
+        src_content = copilot_src.read_text()
+        dest_content = copilot_dest.read_text()
+        if src_content == dest_content:
+            print(f"{Colors.GREEN}✓{Colors.NC} Copilot instructions up to date")
+            return
+        print(f"{Colors.YELLOW}⚠ Copilot instructions differ{Colors.NC}")
+        try:
+            response = input("  Overwrite local copy? [y/N] ").strip().lower()
+        except EOFError:
+            return
+        if response != 'y':
+            return
+    
+    shutil.copy2(copilot_src, copilot_dest)
+    print(f"{Colors.GREEN}✓{Colors.NC} Copied copilot instructions to {copilot_dest}")
 
 def cmd_repo_status(args):
     """Show which repos exist on this machine"""
