@@ -352,7 +352,8 @@ def cmd_repo_sync(args):
 
     print("-" * 60)
     print(f"Synced: {Colors.GREEN}{synced}{Colors.NC} | Skipped: {Colors.YELLOW}{skipped}{Colors.NC} | Failed: {Colors.RED}{failed}{Colors.NC}")
-    # Apply copilot instructions to workspace (repoconfig was already updated and pushed)
+
+    # Apply copilot instructions to workspace (repoconfig may have updates from remote)
     apply_copilot_instructions_to_workspace(base_path)
 
     return 0

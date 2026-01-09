@@ -114,6 +114,7 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
 | Dev CLI scripts | `~/.dev_scripts/dev.py` |
 | Repo tracking config | `~/.dev_scripts/repoconfig/repos.json` |
 | Copilot instructions sync | `~/.dev_scripts/repoconfig/copilot-instructions.md` |
+| ADO PAT (PRs, builds, API) | `~/.dev_scripts/repoconfig/ado_pat.txt` |
 
 ### Dev Scripts Structure
 
@@ -126,8 +127,18 @@ set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build ch
 ├── python3.cmd         # Windows python shim (batch)
 └── repoconfig/
     ├── repos.json              # Tracked repos config
-    └── copilot-instructions.md # Synced copilot instructions
+    ├── copilot-instructions.md # Synced copilot instructions
+    └── ado_pat.txt             # Azure DevOps Personal Access Token
 ```
+
+### Azure DevOps PAT
+
+The file `~/.dev_scripts/repoconfig/ado_pat.txt` stores an Azure DevOps Personal Access Token (PAT) used for authenticated ADO API requests including:
+- **Pull Requests** - Creating, querying, and managing PRs
+- **Build Logs** - Fetching build logs and pipeline results
+- **Other ADO Requests** - Work items, artifacts, and general ADO REST API calls
+
+**If the PAT is expired or returns authentication errors, prompt the user to provide a new PAT and update the file.**
 
 ## Dev CLI (`dev` command)
 
