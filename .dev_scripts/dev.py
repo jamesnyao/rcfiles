@@ -240,10 +240,16 @@ def cmd_repo_list(args):
 def sync_rcfiles():
     """Sync rcfiles (dev_scripts config) - simple strategy to avoid conflicts.
     
-    Strategy: Fetch remote, reset to remote if behind, then push local changes.
-    This avoids merge conflicts by always accepting remote first.
+    Strategy: Commit local changes first, then fetch remote. If behind, 
+    rebase local commits on top of remote. This preserves local changes.
     """
     print(f"{Colors.BLUE}Syncing rcfiles (dev_scripts)...{Colors.NC}")
+    
+    # Add and commit any local changes first (before fetching)
+    run_git(SCRIPT_DIR, 'add', '-A')
+    _, status = run_git(SCRIPT_DIR, 'status', '--porcelain')
+    if status:
+        run_git(SCRIPT_DIR, 'commit', '-m', 'Auto-sync local changes')
     
     # Fetch latest from remote
     success, _ = run_git(SCRIPT_DIR, 'fetch', 'origin')
@@ -264,13 +270,24 @@ def sync_rcfiles():
         ahead, behind = 0, 0
     
     if behind > 0:
-        # We're behind remote - reset to remote (no conflicts possible)
-        success, output = run_git(SCRIPT_DIR, 'reset', '--hard', f'origin/{default_branch}')
+        # We're behind remote - rebase our commits on top of remote
+        success, output = run_git(SCRIPT_DIR, 'rebase', f'origin/{default_branch}')
         if not success:
-            print(f"{Colors.RED}[X] Failed to sync rcfiles: {output}{Colors.NC}")
+            # Rebase failed (conflict) - abort and warn user
+            run_git(SCRIPT_DIR, 'rebase', '--abort')
+            print(f"{Colors.RED}[X] Rebase conflict in rcfiles. Please resolve manually.{Colors.NC}")
             return
-        print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles updated from remote ({behind} commits)")
-    elif ahead > 0:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} rcfiles rebased on remote ({behind} commits)")
+    
+    # Check again if we're ahead after rebase
+    _, ahead_behind = run_git(SCRIPT_DIR, 'rev-list', '--left-right', '--count', f'HEAD...origin/{default_branch}')
+    try:
+        ahead, _ = ahead_behind.split()
+        ahead = int(ahead)
+    except:
+        ahead = 0
+    
+    if ahead > 0:
         # We're ahead - just push
         success, output = run_git(SCRIPT_DIR, 'push')
         if success:
