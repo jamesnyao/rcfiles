@@ -463,7 +463,7 @@ def apply_copilot_instructions_to_workspace(base_path):
 
     # Copy from repoconfig to workspace
     copilot_dest.write_text(src_content, encoding='utf-8')
-    print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions synced to workspace")
+    print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated")
 
 
 def cmd_repo_status(args):
