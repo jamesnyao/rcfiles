@@ -351,7 +351,11 @@ def cmd_repo_sync(args):
             failed += 1
 
     print("-" * 60)
-    print(f"Synced: {Colors.GREEN}{synced}{Colors.NC} | Skipped: {Colors.YELLOW}{skipped}{Colors.NC} | Failed: {Colors.RED}{failed}{Colors.NC}")
+    # Only colorize non-zero counts
+    synced_str = f"{Colors.GREEN}{synced}{Colors.NC}" if synced > 0 else str(synced)
+    skipped_str = f"{Colors.CYAN}{skipped}{Colors.NC}" if skipped > 0 else str(skipped)
+    failed_str = f"{Colors.RED}{failed}{Colors.NC}" if failed > 0 else str(failed)
+    print(f"Synced: {synced_str} | Skipped: {skipped_str} | Failed: {failed_str}")
 
     # Apply copilot instructions to workspace (repoconfig may have updates from remote)
     copilot_updated_from_remote = apply_copilot_instructions_to_workspace(base_path)
