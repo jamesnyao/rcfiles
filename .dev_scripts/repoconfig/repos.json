@@ -4,7 +4,7 @@
   "defaultBasePaths": {
     "linux": "/workspace",
     "darwin": "/workspace",
-    "windows": "C:\\dev"
+    "windows": "Q:\\dev\\edge"
   },
   "repos": [
     {
