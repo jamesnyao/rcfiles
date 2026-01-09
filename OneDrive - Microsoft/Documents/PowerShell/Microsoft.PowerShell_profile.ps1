@@ -174,5 +174,5 @@ Set-Internal
 
 # Dev CLI
 function dev {
-    & "$env:USERPROFILE\.repoconfig\dev.ps1" @args
+    python "$env:USERPROFILE\.dev_scripts\dev.py" @args
 }

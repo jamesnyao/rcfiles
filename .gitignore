@@ -16,5 +16,7 @@
 !OneDrive - Microsoft/Documents/PowerShell/
 !OneDrive - Microsoft/Documents/PowerShell/Microsoft.PowerShell_profile.ps1
 
-!.repoconfig/
-!.repoconfig/*
+!.dev_scripts/
+!.dev_scripts/*
+!.dev_scripts/repoconfig/
+!.dev_scripts/repoconfig/*

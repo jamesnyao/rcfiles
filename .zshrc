@@ -169,4 +169,4 @@ cd $ENLIST_BASE/edge/src
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Dev CLI
-source ~/.repoconfig/aliases.sh
+source ~/.dev_scripts/aliases.sh
