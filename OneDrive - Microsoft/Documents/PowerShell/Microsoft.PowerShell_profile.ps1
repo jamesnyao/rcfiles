@@ -121,7 +121,7 @@ function Set-Internal() {
 function Set-CrDT() {
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:Dev\cr\depot_tools"
-  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:OLD_PATH"
+  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   $env:SISO_PATH = "$env:Dev\infra\go\src\infra\build\siso\siso"
   #Set-Location "$env:Dev\infra"
   Write-Output "Depot Tools set up for $env:Dev"
@@ -153,9 +153,8 @@ function Set-ProdRE() {
 }
 
 function Set-Clean() {
-  # No depot_tools
-  $env:DEPOT_TOOLS_PATH = ""
-  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:OLD_PATH"
+  $env:DEPOT_TOOLS_PATH = "$env:Dev\edge\depot_tools"
+  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   $env:SISO_LIMITS = ""
   $env:SISO_PATH = ""
   $env:SISO_EXPERIMENTS = ""
