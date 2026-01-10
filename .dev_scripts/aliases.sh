@@ -27,33 +27,50 @@ _make_depot_path() {
 set-downstream() {
     export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/edge/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" false)"
+    cd $DEV_WORKSPACE/edge/src
     echo "Set to downstream (edge) enlistment"
-}
-
-# Set to internal Edge enlistment (uses python shim)
-set-internal() {
-    export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/edge/depot_tools"
-    export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" true)"
-    echo "Set to internal (edge) enlistment with python shim"
 }
 
 # Set to upstream Chromium enlistment (uses python shim)
 set-upstream() {
     export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/cr/depot_tools"
-    export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" true)"
+    export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" false)"
+    cd $DEV_WORKSPACE/cr/src
     echo "Set to upstream (cr) enlistment"
 }
 
-# Set to upstream depot_tools (cr/depot_tools, uses python shim)
-set-crdt() {
-    export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/cr/depot_tools"
+# Set to internal Edge enlistment (uses python shim)
+set-clean() {
+    export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/edge/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" true)"
-    echo "Set to cr/depot_tools"
+    export SISO_LIMITS=""
+    export SISO_EXPERIMENTS=""
+    echo "Set to workspace defaults"
 }
 
 # Reset PATH to original
-reset-path() {
+set-no-depot-tools() {
     export PATH="$OLD_PATH"
     unset DEPOT_TOOLS_PATH
-    echo "Reset PATH to original"
+    echo "Reset PATH to $OLD_PATH"
+}
+
+set-dev-re() {
+  export REAPI_ADDRESS="rbedev.westus3.cloudapp.azure.com:443"
+  export REAPI_CAS_ADDRESS="rbecasdev.westus3.cloudapp.azure.com:443"
+}
+
+set-staging-re() {
+  export REAPI_ADDRESS="rbestaging.westus3.cloudapp.azure.com:443"
+  export REAPI_CAS_ADDRESS="rbecasstaging.westus3.cloudapp.azure.com:443"
+}
+
+set-prod-re() {
+  export REAPI_ADDRESS="rbeprod.westus.cloudapp.azure.com:443"
+  export REAPI_CAS_ADDRESS="rbecasprod.westus.cloudapp.azure.com:443"
+}
+
+set-remote-only() {
+  export SISO_LIMITS="fastlocal=0"
+  export SISO_EXPERIMENTS="no-fallback"
 }

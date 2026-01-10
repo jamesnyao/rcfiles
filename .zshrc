@@ -149,30 +149,11 @@ PATH2="$DEPOT_TOOLS_PATH2:$DEPOT_TOOLS_PATH2/scripts:$OLD_PATH"
 
 PATH="$PATH1"
 
-
-set-dev-re() {
-  export REAPI_ADDRESS="rbedev.westus3.cloudapp.azure.com:443"
-  export REAPI_CAS_ADDRESS="rbecasdev.westus3.cloudapp.azure.com:443"
-}
-
-set-staging-re() {
-  export REAPI_ADDRESS="rbestaging.westus3.cloudapp.azure.com:443"
-  export REAPI_CAS_ADDRESS="rbecasstaging.westus3.cloudapp.azure.com:443"
-}
-
-set-prod-re() {
-  export REAPI_ADDRESS="rbeprod.westus.cloudapp.azure.com:443"
-  export REAPI_CAS_ADDRESS="rbecasprod.westus.cloudapp.azure.com:443"
-}
-
-set-remote-only() {
-  export SISO_LIMITS="fastlocal=0"
-  export SISO_EXPERIMENTS="no-fallback"
-}
-
 cd $ENLIST_BASE/edge/src
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Dev CLI
 source ~/.dev_scripts/aliases.sh
+
+set-downstream
