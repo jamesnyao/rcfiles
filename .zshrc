@@ -165,7 +165,7 @@ set-prod-re() {
   export REAPI_CAS_ADDRESS="rbecasprod.westus.cloudapp.azure.com:443"
 }
 
-set_remote_only() {
+set-remote-only() {
   export SISO_LIMITS="fastlocal=0"
   export SISO_EXPERIMENTS="no-fallback"
 }
