@@ -45,6 +45,7 @@ set-clean() {
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" true)"
     export SISO_LIMITS=""
     export SISO_EXPERIMENTS=""
+    export SISO_PATH=""
     echo "Set to workspace defaults"
 }
 
