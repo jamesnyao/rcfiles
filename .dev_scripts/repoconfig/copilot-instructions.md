@@ -142,7 +142,7 @@ The file `~/.dev_scripts/repoconfig/ado_pat.txt` stores an Azure DevOps Personal
 - **Build Logs** - Fetching build logs and pipeline results
 - **Other ADO Requests** - Work items, artifacts, and general ADO REST API calls
 
-**If the PAT is expired or returns authentication errors, prompt the user to provide a new PAT and update the file.**
+**IMPORTANT: If the PAT is expired or returns authentication errors, or is missing, prompt the user to provide a new PAT and update the file.**
 
 ## Dev CLI (`dev` command)
 
