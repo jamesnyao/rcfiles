@@ -43,6 +43,10 @@ function prompt {
   return "$userHost $pathDisplay$gitBranch $promptChar"
 }
 
+# Set PATH values
+if (-not ($env:PATH -like "*$env:USERPROFILE\.local\bin*")) {
+  $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
+}
 
 # Check if choco is installed
 if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
@@ -163,7 +167,7 @@ function Set-Clean() {
 
 # Dev CLI
 function dev {
-    py "$env:USERPROFILE\.dev_scripts\dev.py" @args
+  py "$env:USERPROFILE\.dev_scripts\dev.py" @args
 }
 
 Set-Downstream
