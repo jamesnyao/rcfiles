@@ -24,7 +24,7 @@ _make_depot_path() {
 }
 
 # Set to downstream Edge enlistment (uses depot_tools python, no shim)
-set-downstream() {
+set_downstream() {
     export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/edge/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" false)"
     cd $DEV_WORKSPACE/edge/src
@@ -32,7 +32,7 @@ set-downstream() {
 }
 
 # Set to upstream Chromium enlistment (uses python shim)
-set-upstream() {
+set_upstream() {
     export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/cr/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" false)"
     cd $DEV_WORKSPACE/cr/src
@@ -40,7 +40,7 @@ set-upstream() {
 }
 
 # Set to internal Edge enlistment (uses python shim)
-set-clean() {
+set_clean() {
     export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/edge/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" true)"
     export SISO_LIMITS=""
@@ -50,28 +50,33 @@ set-clean() {
 }
 
 # Reset PATH to original
-set-no-depot-tools() {
+set_no_depot_tools() {
     export PATH="$OLD_PATH"
     unset DEPOT_TOOLS_PATH
     echo "Reset PATH to $OLD_PATH"
 }
 
-set-dev-re() {
+set_dev_re() {
   export REAPI_ADDRESS="rbedev.westus3.cloudapp.azure.com:443"
   export REAPI_CAS_ADDRESS="rbecasdev.westus3.cloudapp.azure.com:443"
+  export SISO_EXPERIMENTS=""
+  export SISO_LIMITS="fastlocal=0,local=1,remote=24"
 }
 
-set-staging-re() {
+set_staging_re() {
   export REAPI_ADDRESS="rbestaging.westus3.cloudapp.azure.com:443"
   export REAPI_CAS_ADDRESS="rbecasstaging.westus3.cloudapp.azure.com:443"
+  export SISO_EXPERIMENTS=""
+  export SISO_LIMITS="fastlocal=0,local=1,remote=24"
 }
 
-set-prod-re() {
+set_prod_re() {
   export REAPI_ADDRESS="rbeprod.westus.cloudapp.azure.com:443"
   export REAPI_CAS_ADDRESS="rbecasprod.westus.cloudapp.azure.com:443"
+  export SISO_EXPERIMENTS=""
+  export SISO_LIMITS="fastlocal=0,local=1"
 }
 
-set-remote-only() {
-  export SISO_LIMITS="fastlocal=0"
+set_remote_only() {
   export SISO_EXPERIMENTS="no-fallback"
 }
