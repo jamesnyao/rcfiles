@@ -47,6 +47,9 @@ function prompt {
 if (-not ($env:PATH -like "*$env:USERPROFILE\.local\bin*")) {
   $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
 }
+if (-not ($env:PATH -like "*$env:ProgramFiles\GitHub CLI*")) {
+  $env:PATH = "$env:ProgramFiles\GitHub CLI;$env:PATH"
+}
 
 # Check if choco is installed
 if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
@@ -175,4 +178,10 @@ function dev {
   py "$env:USERPROFILE\.dev_scripts\dev.py" @args
 }
 
-Set-Downstream
+function cop {
+  copilot
+}
+
+if ($PWD.Path -like "$HOME") {
+  Set-Internal
+}
