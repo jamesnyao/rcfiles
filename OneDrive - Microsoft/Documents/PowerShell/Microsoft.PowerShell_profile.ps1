@@ -182,7 +182,8 @@ function dev {
 }
 
 function cop {
-  copilot
+  Set-Internal
+  copilot --allow-all
 }
 
 if ($PWD.Path -like "$HOME") {
