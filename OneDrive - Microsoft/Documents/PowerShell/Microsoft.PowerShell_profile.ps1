@@ -50,6 +50,9 @@ if (-not ($env:PATH -like "*$env:USERPROFILE\.local\bin*")) {
 if (-not ($env:PATH -like "*$env:ProgramFiles\GitHub CLI*")) {
   $env:PATH = "$env:ProgramFiles\GitHub CLI;$env:PATH"
 }
+if (-not ($env:PATH -like "*$env:ProgramFiles\LLVM\bin*")) {
+  $env:PATH = "$env:ProgramFiles\LLVM\bin;$env:PATH"
+}
 
 # Check if choco is installed
 if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
