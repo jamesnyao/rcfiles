@@ -11,6 +11,10 @@
 !scripts/python3.cmd
 !scripts/salt_chromium_src.py
 
+!Documents/
+!Documents/PowerShell/
+!Documents/PowerShell/Microsoft.PowerShell_profile.ps1
+
 !OneDrive - Microsoft/
 !OneDrive - Microsoft/Documents/
 !OneDrive - Microsoft/Documents/PowerShell/
