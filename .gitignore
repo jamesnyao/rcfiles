@@ -3,6 +3,7 @@
 
 # Allow these
 !.gitignore
+!.psprofile.ps1
 !.zshrc
 !.vimrc
 !jamyao.zsh-theme
