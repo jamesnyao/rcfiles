@@ -494,7 +494,9 @@ def cmd_repo_status(args):
 
 def get_python_command():
     """Get the Python command for this platform"""
-    return "./python3"
+    if get_os_type() == 'windows':
+        return ['py', '-3']
+    return ['python3']
 
 def get_current_python_version():
     """Get the currently installed Python version"""

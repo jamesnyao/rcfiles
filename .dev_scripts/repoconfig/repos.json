@@ -5,7 +5,8 @@
     "linux-devbox": "/workspace",
     "mac-devbox": "/dev",
     "win-devbox": "Q:\\dev",
-    "win-surface": "C:\\dev"
+    "win-surface": "C:\\dev",
+    "win-nexus": "D:\\dev"
   },
   "repos": [
     {

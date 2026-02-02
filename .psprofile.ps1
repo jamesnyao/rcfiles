@@ -13,6 +13,8 @@ function prompt {
     }
   } catch {}
   
+  $userHostName = "jamyao-dev"
+
   # Custom machine name
   if ($env:COMPUTERNAME -like "CPC-jamya*") {
     $hostName = "devbox"
@@ -22,13 +24,14 @@ function prompt {
     $hostName = "surface"
   } else {
     $hostName = $env:COMPUTERNAME.ToLower()
+    $userHostName = $env:USERNAME
   }
 
   # Dev config
   $env:DEVCONFIG = "win-$hostname"
   
   # User@Host in green (like zsh default)
-  $userHost = "`e[32mjamyao-dev@$hostName`e[0m"
+  $userHost = "`e[32m$userHostName@$hostName`e[0m"
   
   # Path in blue (like zsh default)
   $pathDisplay = "`e[96m$currentPath`e[0m"
@@ -44,6 +47,9 @@ function prompt {
 }
 
 # Set PATH values
+if (-not ($env:PATH -like "*$env:USERPROFILE\.dev_scripts*")) {
+  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:PATH"
+}
 if (-not ($env:PATH -like "*$env:USERPROFILE\.local\bin*")) {
   $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
 }
@@ -97,44 +103,43 @@ elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
   $env:DownEnlistRoot = "C:\dev\edge"
   $env:UpEnlistRoot = "C:\dev\cr"
 }
+elseif ($env:COMPUTERNAME -eq "NEXUS") {
+  $env:MachineType = "dev"
+  $env:Dev = "D:\dev"
+  $env:NonMsft = $true
+}
 $env:DEPOT_TOOLS_PREVIEW_RING = 1
 
 
 function Set-Downstream() {
+  if ([string]::IsNullOrEmpty($env:DownEnlistRoot)) {
+    return
+  }
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:DownEnlistRoot\depot_tools"
   $env:PATH = "$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
-  #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
-  #$env:REPROXY_CFG = "$env:DownEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:DownEnlistRoot\src"
   Write-Output "Depot Tools set up for Edge Downstream"
 }
 
 function Set-Upstream() {
+  if ([string]::IsNullOrEmpty($env:UpEnlistRoot)) {
+    return
+  }
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:UpEnlistRoot\depot_tools"
   $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
-  #$env:SISO_LIMITS = "fastlocal=8,startlocal=12"
-  #$env:REPROXY_CFG = "$env:UpEnlistRoot\src\buildtools\reclient_cfgs\reproxy.cfg"
   Set-Location "$env:UpEnlistRoot\src"
   Write-Output "Depot Tools set up for Edge Upstream"
 }
 
 function Set-Internal() {
-  # Set up depot_tools
-  $env:DEPOT_TOOLS_PATH = "$env:Dev\edge\depot_tools"
-  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
+  if (![string]::IsNullOrEmpty($env:DownEnlistRoot)) {
+    # Set up depot_tools
+    $env:DEPOT_TOOLS_PATH = "$env:DownEnlistRoot\depot_tools"
+    $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
+  }
   Set-Location $env:Dev
-  Write-Output "Depot Tools set up for $env:Dev"
-}
-
-function Set-CrDT() {
-  # Set up depot_tools
-  $env:DEPOT_TOOLS_PATH = "$env:Dev\cr\depot_tools"
-  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
-  $env:SISO_PATH = "$env:Dev\infra\go\src\infra\build\siso\siso"
-  #Set-Location "$env:Dev\infra"
-  Write-Output "Depot Tools set up for $env:Dev"
 }
 
 function Set-SisoPath() {
@@ -178,12 +183,28 @@ function Set-Clean() {
 
 # Dev CLI
 function dev {
-  py "$env:USERPROFILE\.dev_scripts\dev.py" @args
+  if (Get-Command py -ErrorAction SilentlyContinue) {
+    py "$env:USERPROFILE\.dev_scripts\dev.py" @args
+  } elseif ($args.Count -ge 1 -and $args[0] -eq 'python') {
+    Write-Host "Python not found. Bootstrapping via winget..." -ForegroundColor Blue
+    winget install Python.Python.3.12 --accept-package-agreements --accept-source-agreements
+    if ($LASTEXITCODE -eq 0) {
+      Write-Host "Python installed. Restart your terminal to use it." -ForegroundColor Green
+    } else {
+      Write-Host "Failed to install Python." -ForegroundColor Red
+    }
+  } else {
+    Write-Host "Python is not installed. Run 'dev python update' to bootstrap it." -ForegroundColor Red
+  }
 }
 
 function cop {
   Set-Internal
-  copilot --allow-all
+  if ($env:NonMsft) {
+    claude --allow-dangerously-skip-permissions
+  } else {
+    copilot --allow-all
+  }
 }
 
 if ($PWD.Path -like "$HOME") {
