@@ -144,7 +144,7 @@ autoninja -C out\win_x64_debug_developer_build chrome
 ```
 
 **Note:** This will build on Prod RE unless the `autoninja ...` step is prefixed with `set_dev_re; set_remote_only;` to use Preprod RE with no local fallbacks.
-`gclient sync -Df` forces a full sync and overwrites local changes. It is required if the source branch changes significantly (ie running `git pull`).
+`gclient sync -Df` forces a full sync and overwrites local changes. It is required if the source branch changes significantly (ie after running `git pull`).
 
 ## Remote Execution (RE) Architecture
 
