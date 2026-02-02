@@ -8,9 +8,12 @@ Review any deletions to this file - unless the information is no longer accurate
 
 ## Critical Rules
 
-**NEVER interrupt a running build unless explicitly asked or there are actual errors.** When a build is in progress and has not generated errors, let it complete. Build interruptions waste significant time and resources.
+**NEVER queue a pipeline unless explicitly instructed.** Do not queue any Azure DevOps pipelines unless specifically told to do so by a human user or documented instructions. An explicit pipeline link will be provided if queuing is necessary. Queuing pipelines incorrectly may cause unintended consequences.
+**ALWAYS double check the correct pipeline is being queued.** If instructed to queue a pipeline, verify the pipeline name and parameters match the instructions exactly before proceeding.
+
+**NEVER interrupt a running build unless explicitly asked or there are actual errors.** When running `autoninja` to test a build, while it's in progress and has not generated errors, let it complete. Build interruptions waste significant time and resources.
 **CONTINUOUSLY monitor a running build for errors - only interrupt if necessary.** 
-Continuously monitor the build for errors by checking the terminal output every 30 seconds, if timeouts are detected and cause the build to fail, restart the build. If other errors are detected, make the appropriate changes to fix the errors and restart the build. Check for build logs in `edge/src/out/siso*`.
+If building on Dev/Preprod, continuously monitor the build for errors by checking the terminal output every 30 seconds, if timeouts are detected and cause the build to fail, restart the build. If other errors are detected, make the appropriate changes to fix the errors and restart the build. Check for build logs in `edge/src/out/siso*`.
 
 **ALWAYS run tests after modifying `~/.dev_scripts/`.** If any file in the `~/.dev_scripts/` directory (including `dev.py`, `test_dev.py`, or any repoconfig files) is modified, you MUST run `python3 ~/.dev_scripts/test_dev.py` and ensure ALL tests pass before considering the change complete. This is non-negotiable.
 
@@ -20,7 +23,7 @@ Continuously monitor the build for errors by checking the terminal output every 
 
 The workspace root differs by operating system:
 - **Linux/macOS**: `/workspace`
-- **Windows**: `Q:\dev` (or other drive letter)
+- **Windows**: `C:\dev` (or other drive letter)
 
 All paths in this document are relative to the workspace root.
 
@@ -62,8 +65,9 @@ Infrastructure, tooling, and Azure resource management.
 - `cipd/` - Chrome Infrastructure Package Deployment tools
 - `isolateservice/` - Isolate service for build caching
 
-### `es2/` - Edge Engineering Systems v2 (development branch)
-Development branch of Edge Engineering Systems with RE improvements.
+### `es2/` | `es3/` - Edge Engineering Systems v2/v3 (edgeinternal.es)
+Alternate development branch of Edge Engineering Systems so work can happen in parallel.
+Structure is identical to `es/`.
 
 **Key directories:**
 - `RE/msRemoteExecution/` - Remote Execution .NET solution
@@ -101,13 +105,46 @@ Release automation tooling.
 
 ### Testing on RE Preprod
 To test changes on RE Preprod, use:
+Linux:
 ```bash
-set_re_dev; set_remote_only; autoninja -C out/linux_x64_debug_developer_build chrome
+set_downstream; set_dev_re; set_remote_only; autoninja -C out/linux_x64_debug_developer_build chrome
 ```
-- `set_re_dev` - Points to the RE Preprod environment
+- `set_downstream` - Changes to edge/src and sets depot_tools accordingly
+- `set_dev_re` - Points to the RE Preprod environment
 - `set_remote_only` - Prevents local fallbacks from polluting the output and giving false positive build results
 
+Windows:
+```powershell
+Set-Downstream; Set-DevRE; Set-RemoteOnly; autoninja -C out\win_x64_debug_developer_build chrome
+```
+- `Set-Downstream` - Changes to edge/src and sets depot_tools accordingly
+- `Set-DevRE` - Points to the RE Preprod environment
+- `Set-RemoteOnly` - Prevents local fallbacks from polluting the output and giving false positive build results
+
 **Note:** If testing a preprod build with fallbacks disabled and the build fails purely due to timeouts, restart the build. This is caused by high load and is not indicative of 500 errors.
+
+### Full Edge Build
+To clean the output directory and run a full Edge build:
+Linux:
+```bash
+set_downstream
+rm -rf out
+gclient sync -Df
+autogn
+autoninja -C out/linux_x64_debug_developer_build chrome
+```
+
+Windows:
+```powershell
+Set-Downstream
+Remove-Item -Recurse -Force out
+gclient sync -Df
+autogn
+autoninja -C out\win_x64_debug_developer_build chrome
+```
+
+**Note:** This will build on Prod RE unless the `autoninja ...` step is prefixed with `set_dev_re; set_remote_only;` to use Preprod RE with no local fallbacks.
+`gclient sync -Df` forces a full sync and overwrites local changes. It is required if the source branch changes significantly (ie running `git pull`).
 
 ## Remote Execution (RE) Architecture
 
