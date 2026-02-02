@@ -581,11 +581,3 @@ Functions defined in `$PROFILE`:
 
 The python shim (`~/.dev_scripts/python3.cmd`) skips depot_tools\scripts and Windows Store stubs.
 
-## PowerShell Terminal Guidelines
-
-### CRITICAL: Never Source Profile
-**NEVER** run `. $PROFILE` or `Import-Module` commands that wait for user input in the terminal. This will freeze Copilot chat indefinitely since it waits for a return value that never appears.
-
-Instead, if you need to update a function or alias after modifying the profile:
-- Define the function/alias directly in the current session
-- Example: `function dev { python3 "$env:USERPROFILE\.dev_scripts\dev.py" @args }`

@@ -307,6 +307,7 @@ def cmd_repo_sync(args):
     base_path.mkdir(parents=True, exist_ok=True)
 
     synced = skipped = failed = 0
+    config_changed = False
 
     for repo in sorted(config['repos'], key=lambda r: r['name']):
         name = repo['name']
@@ -325,6 +326,32 @@ def cmd_repo_sync(args):
             failed += 1
             continue
 
+        # Check if this repo was previously declined on this machine
+        devconfig = os.getenv('DEVCONFIG', '')
+        skip_list = repo.get('skipOn', [])
+        if devconfig and devconfig in skip_list:
+            print(f"{Colors.CYAN}[SKIP]{Colors.NC} {name} (declined on {devconfig})")
+            skipped += 1
+            continue
+
+        # Prompt user before cloning a new repo
+        try:
+            response = input(f"{Colors.YELLOW}[NEW]{Colors.NC} {name} is not set up. Clone it? [y/N] ").strip().lower()
+        except EOFError:
+            response = 'n'
+
+        if response != 'y':
+            # Remember the decision for this machine
+            if devconfig:
+                if 'skipOn' not in repo:
+                    repo['skipOn'] = []
+                if devconfig not in repo['skipOn']:
+                    repo['skipOn'].append(devconfig)
+                    config_changed = True
+            print(f"{Colors.CYAN}[SKIP]{Colors.NC} {name}")
+            skipped += 1
+            continue
+
         # Create parent directory if needed (for nested repos)
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -336,6 +363,9 @@ def cmd_repo_sync(args):
         else:
             print(f"{Colors.RED}[X]{Colors.NC} Failed to clone {name}")
             failed += 1
+
+    if config_changed:
+        save_config(config)
 
     print("-" * 60)
     # Only colorize non-zero counts
