@@ -290,10 +290,11 @@ def cmd_repo_sync(args):
     config = load_config()
     base_path = Path(get_base_path(config))
     
-    # First, merge copilot instructions (before syncing rcfiles so changes get pushed)
+    # First, merge instructions (before syncing rcfiles so changes get pushed)
     copilot_updated_from_workspace = merge_copilot_instructions_to_repoconfig(base_path)
-    
-    # Now sync rcfiles (pull, commit local changes including copilot, push)
+    claude_updated_from_workspace = merge_claude_instructions_to_repoconfig(base_path)
+
+    # Now sync rcfiles (pull, commit local changes including instructions, push)
     sync_rcfiles()
     print()
 
@@ -374,16 +375,24 @@ def cmd_repo_sync(args):
     failed_str = f"{Colors.RED}{failed}{Colors.NC}" if failed > 0 else str(failed)
     print(f"Synced: {synced_str} | Skipped: {skipped_str} | Failed: {failed_str}")
 
-    # Apply copilot instructions to workspace (repoconfig may have updates from remote)
+    # Apply instructions to workspace (repoconfig may have updates from remote)
     copilot_updated_from_remote = apply_copilot_instructions_to_workspace(base_path)
-    
-    # Show copilot sync status at the end
+    claude_updated_from_remote = apply_claude_instructions_to_workspace(base_path)
+
+    # Show sync status at the end
     if copilot_updated_from_workspace:
         print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from workspace")
     elif copilot_updated_from_remote:
         print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions updated from remote")
     else:
         print(f"{Colors.GREEN}[OK]{Colors.NC} Copilot instructions up to date")
+
+    if claude_updated_from_workspace:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Claude instructions updated from workspace")
+    elif claude_updated_from_remote:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Claude instructions updated from remote")
+    else:
+        print(f"{Colors.GREEN}[OK]{Colors.NC} Claude instructions up to date")
 
     return 0
 
@@ -472,27 +481,98 @@ def apply_copilot_instructions_to_workspace(base_path):
 
     if not copilot_src.exists():
         return False
-    
+
     src_content = copilot_src.read_text(encoding='utf-8')
-    
+
     # Check for conflict markers in repoconfig
     if has_real_conflict_markers(src_content):
         print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Copilot instructions have merge conflicts in repoconfig")
         print(f"  File: {copilot_src}")
         print("  Please resolve, then run 'dev repo sync' again")
         return False
-    
+
     dest_content = copilot_dest.read_text(encoding='utf-8') if copilot_dest.exists() else ''
-    
+
     # Normalize for comparison
     src_normalized = src_content.replace('\r\n', '\n')
     dest_normalized = dest_content.replace('\r\n', '\n')
-    
+
     if src_normalized == dest_normalized:
         return False  # No changes needed
 
     # Copy from repoconfig to workspace
     copilot_dest.write_text(src_content, encoding='utf-8')
+    return True
+
+
+def merge_claude_instructions_to_repoconfig(base_path):
+    """Copy workspace Claude instructions to repoconfig (before rcfiles push).
+
+    Simple strategy: workspace is source of truth, no complex merging.
+    Returns True if changes were made, False otherwise.
+    """
+    claude_src = CONFIG_DIR / 'CLAUDE.md'
+    claude_dest = base_path / '.claude' / 'CLAUDE.md'
+
+    if not claude_dest.exists():
+        return False  # No workspace file
+
+    dest_content = claude_dest.read_text(encoding='utf-8')
+
+    # Check for conflict markers in workspace file and skip if present
+    if has_real_conflict_markers(dest_content):
+        print(f"{Colors.YELLOW}[WARN]{Colors.NC} Workspace CLAUDE.md has conflict markers")
+        print("  Please resolve them first, then run 'dev repo sync' again")
+        return False
+
+    src_content = claude_src.read_text(encoding='utf-8') if claude_src.exists() else ''
+
+    # Normalize for comparison
+    src_normalized = src_content.replace('\r\n', '\n')
+    dest_normalized = dest_content.replace('\r\n', '\n')
+
+    if src_normalized == dest_normalized:
+        return False  # Already in sync
+
+    # Copy from workspace to repoconfig (workspace is source of truth)
+    claude_src.write_text(dest_content, encoding='utf-8')
+    return True
+
+
+def apply_claude_instructions_to_workspace(base_path):
+    """Apply repoconfig Claude instructions to workspace (after rcfiles pull).
+
+    Simple strategy: repoconfig is synced from remote, apply to workspace.
+    Returns True if changes were made, False otherwise.
+    """
+    claude_src = CONFIG_DIR / 'CLAUDE.md'
+    claude_dest = base_path / '.claude' / 'CLAUDE.md'
+
+    claude_dest.parent.mkdir(parents=True, exist_ok=True)
+
+    if not claude_src.exists():
+        return False
+
+    src_content = claude_src.read_text(encoding='utf-8')
+
+    # Check for conflict markers in repoconfig
+    if has_real_conflict_markers(src_content):
+        print(f"{Colors.YELLOW}[CONFLICT]{Colors.NC} Claude instructions have merge conflicts in repoconfig")
+        print(f"  File: {claude_src}")
+        print("  Please resolve, then run 'dev repo sync' again")
+        return False
+
+    dest_content = claude_dest.read_text(encoding='utf-8') if claude_dest.exists() else ''
+
+    # Normalize for comparison
+    src_normalized = src_content.replace('\r\n', '\n')
+    dest_normalized = dest_content.replace('\r\n', '\n')
+
+    if src_normalized == dest_normalized:
+        return False  # No changes needed
+
+    # Copy from repoconfig to workspace
+    claude_dest.write_text(src_content, encoding='utf-8')
     return True
 
 

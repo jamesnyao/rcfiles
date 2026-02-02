@@ -327,6 +327,142 @@ class TestCopilotInstructionsSync(unittest.TestCase):
         self.assertEqual(repoconfig_file.read_text(), content)
 
 
+class TestClaudeInstructionsSync(unittest.TestCase):
+    """Test Claude instructions merge and sync"""
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.orig_config_dir = dev.CONFIG_DIR
+        dev.CONFIG_DIR = Path(self.temp_dir) / 'repoconfig'
+        dev.CONFIG_DIR.mkdir(parents=True)
+
+        # Create workspace structure
+        self.workspace = Path(self.temp_dir) / 'workspace'
+        self.workspace.mkdir()
+        (self.workspace / '.claude').mkdir()
+
+    def tearDown(self):
+        dev.CONFIG_DIR = self.orig_config_dir
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def test_workspace_changes_sync_to_repoconfig(self):
+        """
+        Scenario 1: User edits workspace file, runs dev repo sync.
+        Result: repoconfig should have the updated version.
+        """
+        initial = "# Dev CLI\n\nInitial content\n"
+        (dev.CONFIG_DIR / 'CLAUDE.md').write_text(initial)
+        (self.workspace / '.claude' / 'CLAUDE.md').write_text(initial)
+
+        updated = "# Dev CLI\n\nInitial content\n\n## New Section\nNew content\n"
+        (self.workspace / '.claude' / 'CLAUDE.md').write_text(updated)
+
+        dev.merge_claude_instructions_to_repoconfig(self.workspace)
+
+        repoconfig_content = (dev.CONFIG_DIR / 'CLAUDE.md').read_text()
+        self.assertIn("New Section", repoconfig_content)
+
+    def test_repoconfig_changes_sync_to_workspace(self):
+        """
+        Scenario 2: Remote repoconfig has updates (from another machine).
+        User runs dev repo sync.
+        Result: workspace should have the updated version.
+        """
+        initial = "# Dev CLI\n\nInitial content\n"
+        (self.workspace / '.claude' / 'CLAUDE.md').write_text(initial)
+
+        updated_from_remote = "# Dev CLI\n\nInitial content\n\n## Remote Section\nFrom another machine.\n"
+        (dev.CONFIG_DIR / 'CLAUDE.md').write_text(updated_from_remote)
+
+        dev.apply_claude_instructions_to_workspace(self.workspace)
+
+        workspace_content = (self.workspace / '.claude' / 'CLAUDE.md').read_text()
+        self.assertIn("Remote Section", workspace_content)
+
+    def test_workspace_is_source_of_truth_during_merge(self):
+        """
+        When workspace has different content than repoconfig,
+        workspace content should completely replace repoconfig.
+        """
+        repoconfig_content = "## Old Section\nOld content\n"
+        workspace_content = "## New Section\nNew content\n"
+
+        (dev.CONFIG_DIR / 'CLAUDE.md').write_text(repoconfig_content)
+        (self.workspace / '.claude' / 'CLAUDE.md').write_text(workspace_content)
+
+        dev.merge_claude_instructions_to_repoconfig(self.workspace)
+
+        result = (dev.CONFIG_DIR / 'CLAUDE.md').read_text()
+        self.assertEqual(result, workspace_content)
+        self.assertNotIn("Old Section", result)
+
+    def test_merge_skips_when_workspace_has_conflicts(self):
+        """Merge should skip if workspace file has conflict markers"""
+        conflict_content = "## Section\n<<<<<<< HEAD\nVersion A\n=======\nVersion B\n>>>>>>> branch\n"
+        (self.workspace / '.claude' / 'CLAUDE.md').write_text(conflict_content)
+        (dev.CONFIG_DIR / 'CLAUDE.md').write_text("original")
+
+        dev.merge_claude_instructions_to_repoconfig(self.workspace)
+
+        result = (dev.CONFIG_DIR / 'CLAUDE.md').read_text()
+        self.assertEqual(result, "original")
+
+    def test_apply_skips_when_repoconfig_has_conflicts(self):
+        """Apply should skip if repoconfig file has conflict markers"""
+        conflict_content = "## Section\n<<<<<<< HEAD\nVersion A\n=======\nVersion B\n>>>>>>> branch\n"
+        (dev.CONFIG_DIR / 'CLAUDE.md').write_text(conflict_content)
+        (self.workspace / '.claude' / 'CLAUDE.md').write_text("original")
+
+        dev.apply_claude_instructions_to_workspace(self.workspace)
+
+        result = (self.workspace / '.claude' / 'CLAUDE.md').read_text()
+        self.assertEqual(result, "original")
+
+    def test_merge_handles_empty_repoconfig(self):
+        """Merge should work when repoconfig doesn't exist yet"""
+        workspace_content = "# Dev CLI\n\nNew content\n"
+        (self.workspace / '.claude' / 'CLAUDE.md').write_text(workspace_content)
+
+        repoconfig_file = dev.CONFIG_DIR / 'CLAUDE.md'
+        if repoconfig_file.exists():
+            repoconfig_file.unlink()
+
+        dev.merge_claude_instructions_to_repoconfig(self.workspace)
+
+        self.assertTrue(repoconfig_file.exists())
+        self.assertEqual(repoconfig_file.read_text(), workspace_content)
+
+    def test_apply_creates_workspace_claude_dir(self):
+        """Apply should create .claude dir if it doesn't exist"""
+        import shutil
+        shutil.rmtree(self.workspace / '.claude')
+
+        repoconfig_content = "# Dev CLI\n\nContent\n"
+        (dev.CONFIG_DIR / 'CLAUDE.md').write_text(repoconfig_content)
+
+        dev.apply_claude_instructions_to_workspace(self.workspace)
+
+        workspace_file = self.workspace / '.claude' / 'CLAUDE.md'
+        self.assertTrue(workspace_file.exists())
+        self.assertEqual(workspace_file.read_text(), repoconfig_content)
+
+    def test_no_change_when_content_identical(self):
+        """No file writes should happen when content is identical"""
+        content = "# Dev CLI\n\n## Rules\nSome rules\n"
+        workspace_file = self.workspace / '.claude' / 'CLAUDE.md'
+        repoconfig_file = dev.CONFIG_DIR / 'CLAUDE.md'
+
+        workspace_file.write_text(content)
+        repoconfig_file.write_text(content)
+
+        result = dev.merge_claude_instructions_to_repoconfig(self.workspace)
+        self.assertFalse(result)
+
+        result = dev.apply_claude_instructions_to_workspace(self.workspace)
+        self.assertFalse(result)
+
+
 if __name__ == '__main__':
     # Run with verbosity
     unittest.main(verbosity=2)
