@@ -19,6 +19,14 @@ If building on Dev/Preprod, continuously monitor the build for errors by checkin
 
 **ALWAYS validate fixes.** After making any fix, test and validate the change actually works. For `~/.dev_scripts/` changes: run `python3 ~/.dev_scripts/test_dev.py` (all tests must pass), then run `dev repo sync` to verify end-to-end behavior. For other fixes: run the relevant command, build, or test to confirm the fix works as expected.
 
+## Code Cleanup Guidelines
+
+When asked to do code cleanup:
+- **Simplify function documentation** to about a single sentence unless the function REALLY needs a more complex description
+- **Remove all inline comments** unless they explain convoluted code
+- **Clean up unused usings/includes/imports**
+- **Clean up unnecessary namespace prefixes** (e.g., `System.IO.File` → `File`) if not required
+
 ## Workspace Paths
 
 The workspace root differs by operating system:
