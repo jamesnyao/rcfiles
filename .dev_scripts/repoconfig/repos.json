@@ -7,7 +7,7 @@
     "win-devbox": "Q:\\dev",
     "win-surface": "C:\\dev",
     "win-nexus": "D:\\dev",
-    "wsl-surface": "/mnt/c/dev"
+    "wsl-surface": "/workspace"
   },
   "repos": [
     {

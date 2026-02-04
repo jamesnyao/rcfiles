@@ -1,7 +1,8 @@
-PROMPT="%(?:%{$fg_bold[green]%}%1{➜%} :%{$fg_bold[red]%}%1{➜%} ) %{$fg[grey]%}%n-dev-$ZSH_THEME_PLATFORM %{$fg[cyan]%}%2d%{$reset_color%}"
+PROMPT="%F{2}%n-dev@$ZSH_THEME_PLATFORM%f %F{14}%~%f"
 PROMPT+=' $(git_prompt_info)'
+PROMPT+='%(?:%{$reset_color%}:%{$fg[red]%})$ %{$reset_color%}'
 
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[blue]%}(%{$fg[red]%}"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg[yellow]%}("
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}*%{$fg_bold[blue]%})"
-ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[blue]%})"
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}*)"
+ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg[yellow]%})"

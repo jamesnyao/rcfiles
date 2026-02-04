@@ -2,7 +2,14 @@
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
 # Set up uname platform
-platform=$(uname | tr '[:upper:]' '[:lower:]')
+export platform=$(uname | tr '[:upper:]' '[:lower:]')
+
+# Detect WSL and set display name
+if [[ "$platform" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
+  export ZSH_THEME_PLATFORM="surface-wsl"
+else
+  export ZSH_THEME_PLATFORM="$platform"
+fi
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -11,7 +18,6 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME_PLATFORM="$platform"
 cp $HOME/jamyao.zsh-theme $ZSH/themes/jamyao.zsh-theme
 ZSH_THEME="jamyao"
 
@@ -127,19 +133,26 @@ if [[ "$platform" == "linux" ]]; then
   source <(fzf --zsh)
 fi
 
+# Detect WSL vs native Linux and set paths
+if [[ "$platform" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
+  # WSL
+  export ENLIST_BASE="/workspace"
+  export DEVCONFIG="wsl-surface"
+elif [[ "$platform" == "linux" ]]; then
+  # Native Linux devbox
+  export ENLIST_BASE="/workspace"
+  export DEVCONFIG="linux-devbox"
+elif [[ "$platform" == "darwin" ]]; then
+  export ENLIST_BASE="$HOME"
+  export DEVCONFIG="mac-devbox"
+fi
+
+export DEV_WORKSPACE="$ENLIST_BASE"
+
 title "jamyao-dev-$platform"
 
-export DEVCONFIG="linux-devbox"
-
 # Edge ENV
-
 OLD_PATH="$PATH"
-
-if [[ "$platform" == "linux" ]]; then
-  ENLIST_BASE="/workspace"
-elif [[ "$platform" == "darwin" ]]; then
-  ENLIST_BASE="$HOME"
-fi
 
 DEPOT_TOOLS_PATH="$ENLIST_BASE/edge/depot_tools"
 DEPOT_TOOLS_PATH2="$ENLIST_BASE/edge2/depot_tools"
@@ -149,11 +162,15 @@ PATH2="$DEPOT_TOOLS_PATH2:$DEPOT_TOOLS_PATH2/scripts:$OLD_PATH"
 
 PATH="$PATH1"
 
-cd $ENLIST_BASE/edge/src
-
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Dev CLI
 source ~/.dev_scripts/aliases.sh
 
-set-downstream
+# Start in edge/src
+cd $ENLIST_BASE/edge/src 2>/dev/null || cd $ENLIST_BASE
+
+# cop alias for WSL
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  alias cop="copilot.exe --allow-all"
+fi
