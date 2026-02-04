@@ -170,7 +170,8 @@ source ~/.dev_scripts/aliases.sh
 # Start in edge/src
 cd $ENLIST_BASE/edge/src 2>/dev/null || cd $ENLIST_BASE
 
-# cop alias for WSL
+# WSL-specific: Windows tools
 if grep -qi microsoft /proc/version 2>/dev/null; then
   alias cop="copilot.exe --allow-all"
+  alias code="/mnt/c/Users/jamyao/AppData/Local/Programs/Microsoft\ VS\ Code/bin/code"
 fi
