@@ -19,6 +19,8 @@ If building on Dev/Preprod, continuously monitor the build for errors by checkin
 
 **ALWAYS validate fixes.** After making any fix, test and validate the change actually works. For `~/.dev_scripts/` changes: run `python3 ~/.dev_scripts/test_dev.py` (all tests must pass), then run `dev repo sync` to verify end-to-end behavior. For other fixes: run the relevant command, build, or test to confirm the fix works as expected.
 
+**ALWAYS check if code is cleaned up before pushing.** Before pushing any code changes, review the code to ensure it is clean and follows the Code Cleanup Guidelines below. If the code is not clean, clean up any issues specific to the feature branch before pushing.
+
 ## Code Cleanup Guidelines
 
 When asked to do code cleanup:
@@ -26,6 +28,7 @@ When asked to do code cleanup:
 - **Remove all inline comments** unless they explain convoluted code
 - **Clean up unused usings/includes/imports**
 - **Clean up unnecessary namespace prefixes** (e.g., `System.IO.File` → `File`) if not required
+- **Clean up narative comments** that explain what the code is doing - the code should be clear enough to not require comments in most cases
 
 ## Workspace Paths
 
