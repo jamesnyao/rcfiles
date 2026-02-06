@@ -198,12 +198,20 @@ function dev {
   }
 }
 
+function copilot {
+  & "copilot.exe" --allow-all @args
+}
+
+function claude {
+  & "claude.exe" --allow-dangerously-skip-permissions @args
+}
+
 function cop {
   Set-Internal
   if ($env:NonMsft) {
-    claude --allow-dangerously-skip-permissions
+    & "claude" @args
   } else {
-    copilot --allow-all
+    & "copilot" @args
   }
 }
 
