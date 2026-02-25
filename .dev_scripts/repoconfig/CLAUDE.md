@@ -20,7 +20,7 @@ When asked to do code cleanup:
 
 The workspace root differs by operating system:
 - **Linux/macOS**: `/workspace`
-- **Windows**: `Q:\dev` (or other drive letter)
+- **Windows**: `C:\dev` (or other drive letter)
 
 Use `dev repo set-path <os> <path>` to customize.
 

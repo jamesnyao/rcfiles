@@ -85,13 +85,7 @@ try {
 }
 
 $env:OLD_PATH = $env:PATH
-if ($env:COMPUTERNAME -like "CPC-jamya*") {
-  $env:MachineType = "dev-cloud"
-  $env:Dev = "Q:\dev"
-  $env:DownEnlistRoot = "Q:\dev\edge"
-  $env:UpEnlistRoot = "Q:\dev\cr"
-}
-elseif ($env:COMPUTERNAME -eq "JAMYAO-DEVBOX") {
+if ($env:COMPUTERNAME -eq "JAMYAO-DEVBOX") {
   $env:MachineType = "dev"
   $env:Dev = "C:\dev"
   $env:DownEnlistRoot = "C:\dev\edge"

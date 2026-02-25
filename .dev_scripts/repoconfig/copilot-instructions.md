@@ -588,7 +588,7 @@ The config is stored in `~/.dev_scripts/repoconfig/repos.json` and can be synced
 Default base paths by OS:
 - **Linux**: `/workspace`
 - **macOS**: `/workspace`
-- **Windows**: `Q:\dev`
+- **Windows**: `C:\dev`
 
 Use `dev repo set-path <os> <path>` to customize.
 
