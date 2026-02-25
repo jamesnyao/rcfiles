@@ -13,7 +13,7 @@ function prompt {
     }
   } catch {}
   
-  $userHostName = "jamyao-dev"
+  $userHostName = "jamyao"
 
   # Custom machine name
   if ($env:COMPUTERNAME -like "CPC-jamya*") {
@@ -193,7 +193,7 @@ function dev {
 }
 
 function copilot {
-  & "copilot.exe" --allow-all @args
+  & "agency" copilot --allow-all @args
 }
 
 function claude {
