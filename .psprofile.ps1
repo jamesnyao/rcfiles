@@ -17,8 +17,8 @@ function prompt {
 
   # Custom machine name
   if ($env:COMPUTERNAME -like "CPC-jamya*") {
-    $hostName = "devbox"
-  } elseif ($env:COMPUTERNAME -eq "JAMYAO-DEV") {
+    $hostName = "cloud-devbox"
+  } elseif ($env:COMPUTERNAME -eq "JAMYAO-DEVBOX") {
     $hostName = "devbox"
   } elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
     $hostName = "surface"
@@ -63,7 +63,7 @@ if (-not ($env:PATH -like "*$env:ProgramFiles\LLVM\bin*")) {
 # Check if choco is installed
 if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
   Write-Output "Chocolatey is not installed. Installing..."
-  winget install "Chocolatey.Chocolatey"
+  winget install "Chocolatey.Chocolatey" --source winget
 }
 
 # Import the Chocolatey Profile that contains the necessary code to enable
@@ -79,7 +79,7 @@ if (Test-Path($ChocolateyProfile)) {
 try {
   Invoke-Expression (& { (zoxide init --cmd cd powershell | Out-String) })
 } catch {
-  winget install ajeetdsouza.zoxide
+  winget install ajeetdsouza.zoxide --source winget
   choco install fzf
   Invoke-Expression (& { (zoxide init --cmd cd powershell | Out-String) })
 }
@@ -91,11 +91,11 @@ if ($env:COMPUTERNAME -like "CPC-jamya*") {
   $env:DownEnlistRoot = "Q:\dev\edge"
   $env:UpEnlistRoot = "Q:\dev\cr"
 }
-elseif ($env:COMPUTERNAME -eq "JAMYAO-DEV") {
+elseif ($env:COMPUTERNAME -eq "JAMYAO-DEVBOX") {
   $env:MachineType = "dev"
-  $env:Dev = "X:\dev"
-  $env:DownEnlistRoot = "X:\edge"
-  $env:UpEnlistRoot = "X:\cr"
+  $env:Dev = "C:\dev"
+  $env:DownEnlistRoot = "C:\dev\edge"
+  $env:UpEnlistRoot = "C:\dev\cr"
 }
 elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
   $env:MachineType = "dev"
@@ -187,7 +187,7 @@ function dev {
     py "$env:USERPROFILE\.dev_scripts\dev.py" @args
   } elseif ($args.Count -ge 1 -and $args[0] -eq 'python') {
     Write-Host "Python not found. Bootstrapping via winget..." -ForegroundColor Blue
-    winget install Python.Python.3.12 --accept-package-agreements --accept-source-agreements
+    winget install Python.Python.3.12 --source winget --accept-package-agreements --accept-source-agreements
     if ($LASTEXITCODE -eq 0) {
       Write-Host "Python installed. Restart your terminal to use it." -ForegroundColor Green
     } else {
