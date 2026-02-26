@@ -136,26 +136,24 @@ fi
 # Detect WSL vs native Linux and set paths
 if [[ "$platform" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
   # WSL
-  export ENLIST_BASE="/workspace"
+  export DEV="/workspace"
   export DEVCONFIG="wsl-surface"
 elif [[ "$platform" == "linux" ]]; then
   # Native Linux devbox
-  export ENLIST_BASE="/workspace"
+  export DEV="/workspace"
   export DEVCONFIG="linux-devbox"
 elif [[ "$platform" == "darwin" ]]; then
-  export ENLIST_BASE="$HOME"
+  export DEV="$HOME"
   export DEVCONFIG="mac-devbox"
 fi
-
-export DEV_WORKSPACE="$ENLIST_BASE"
 
 title "jamyao-dev-$platform"
 
 # Edge ENV
 OLD_PATH="$PATH"
 
-DEPOT_TOOLS_PATH="$ENLIST_BASE/edge/depot_tools"
-DEPOT_TOOLS_PATH2="$ENLIST_BASE/edge2/depot_tools"
+DEPOT_TOOLS_PATH="$DEV/edge/depot_tools"
+DEPOT_TOOLS_PATH2="$DEV/edge2/depot_tools"
 
 PATH1="$DEPOT_TOOLS_PATH:$DEPOT_TOOLS_PATH/scripts:$OLD_PATH"
 PATH2="$DEPOT_TOOLS_PATH2:$DEPOT_TOOLS_PATH2/scripts:$OLD_PATH"
@@ -168,7 +166,7 @@ PATH="$PATH1"
 source ~/.dev_scripts/aliases.sh
 
 # Start in edge/src
-cd $ENLIST_BASE/edge/src 2>/dev/null || cd $ENLIST_BASE
+cd $DEV/edge/src 2>/dev/null || cd $DEV
 
 # WSL-specific: Windows tools
 if grep -qi microsoft /proc/version 2>/dev/null; then

@@ -1,14 +1,6 @@
 {
   "version": 1,
   "description": "Tracked repositories for cross-machine sync",
-  "defaultBasePaths": {
-    "linux-devbox": "/workspace",
-    "mac-devbox": "/dev",
-    "win-devbox": "D:\\dev",
-    "win-surface": "C:\\dev",
-    "win-nexus": "D:\\dev",
-    "wsl-surface": "/workspace"
-  },
   "repos": [
     {
       "name": "es",

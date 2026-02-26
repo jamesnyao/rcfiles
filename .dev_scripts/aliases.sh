@@ -9,7 +9,8 @@ export PATH="$DEV_SCRIPTS:$PATH"
 export OLD_PATH="${OLD_PATH:-$PATH}"
 
 # Workspace base (override in ~/.bashrc before sourcing if different)
-: ${DEV_WORKSPACE:=/workspace}
+: ${DEV:=/workspace}
+export DEV
 
 # Helper to construct PATH with depot_tools
 _make_depot_path() {
@@ -25,23 +26,23 @@ _make_depot_path() {
 
 # Set to downstream Edge enlistment (uses depot_tools python, no shim)
 set_downstream() {
-    export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/edge/depot_tools"
+    export DEPOT_TOOLS_PATH="$DEV/edge/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" false)"
-    cd $DEV_WORKSPACE/edge/src
+    cd $DEV/edge/src
     echo "Set to downstream (edge) enlistment"
 }
 
 # Set to upstream Chromium enlistment (uses python shim)
 set_upstream() {
-    export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/cr/depot_tools"
+    export DEPOT_TOOLS_PATH="$DEV/cr/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" false)"
-    cd $DEV_WORKSPACE/cr/src
+    cd $DEV/cr/src
     echo "Set to upstream (cr) enlistment"
 }
 
 # Set to internal Edge enlistment (uses python shim)
 set_clean() {
-    export DEPOT_TOOLS_PATH="$DEV_WORKSPACE/edge/depot_tools"
+    export DEPOT_TOOLS_PATH="$DEV/edge/depot_tools"
     export PATH="$(_make_depot_path "$DEPOT_TOOLS_PATH" true)"
     export SISO_LIMITS=""
     export SISO_EXPERIMENTS=""

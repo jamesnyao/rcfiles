@@ -46,11 +46,11 @@ def save_config(config):
     with open(CONFIG_FILE, 'w') as f:
         json.dump(config, f, indent=2)
 
-def get_base_path(config):
-    devconfig = os.getenv('DEVCONFIG')
-    if devconfig is None:
-        raise ValueError('DEVCONFIG environment variable is missing')
-    return config['defaultBasePaths'].get(devconfig)
+def get_base_path(config=None):
+    dev_path = os.getenv('DEV')
+    if dev_path:
+        return dev_path
+    raise ValueError('DEV environment variable is missing. Set it to your workspace root (e.g. D:\\dev or /workspace).')
 
 def run_git(repo_path, *args):
     """Run git command and return output"""
@@ -172,7 +172,7 @@ def cmd_repo_add(args):
         print(f"{Colors.YELLOW}[WARN]{Colors.NC} No 'origin' remote found")
 
     config = load_config()
-    base_path = get_base_path(config)
+    base_path = get_base_path()
     repo_name = compute_repo_name(repo_path, base_path)
 
     # Remove existing entry if present
@@ -288,7 +288,7 @@ def sync_rcfiles():
 def cmd_repo_sync(args):
     """Clone missing repositories and check for stale branches"""
     config = load_config()
-    base_path = Path(get_base_path(config))
+    base_path = Path(get_base_path())
     
     # First, merge instructions (before syncing rcfiles so changes get pushed)
     copilot_updated_from_workspace = merge_copilot_instructions_to_repoconfig(base_path)
@@ -579,7 +579,7 @@ def apply_claude_instructions_to_workspace(base_path):
 def cmd_repo_status(args):
     """Show which repos exist on this machine"""
     config = load_config()
-    base_path = Path(get_base_path(config))
+    base_path = Path(get_base_path())
 
     print(f"{Colors.BLUE}Repository Status (base: {base_path}){Colors.NC}")
     print("-" * 60)
@@ -760,10 +760,6 @@ def main():
 
     scan_p = repo_sub.add_parser('scan', help='Scan and add all git repos')
     scan_p.add_argument('path', nargs='?', help='Path to scan')
-
-    setpath_p = repo_sub.add_parser('set-path', help='Set base path for a platform')
-    setpath_p.add_argument('platform', help='platform (linux/darwin/win-surface/win-devbox)')
-    setpath_p.add_argument('path', help='Base path')
 
 
     # python subcommand

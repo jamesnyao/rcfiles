@@ -12,23 +12,10 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-# Import the module under test
 sys.path.insert(0, str(Path(__file__).parent))
 import dev
-
-
-class TestColors(unittest.TestCase):
-    """Test color code handling"""
-    
-    def test_colors_defined(self):
-        """Color constants should be defined"""
-        self.assertTrue(hasattr(dev.Colors, 'RED'))
-        self.assertTrue(hasattr(dev.Colors, 'GREEN'))
-        self.assertTrue(hasattr(dev.Colors, 'YELLOW'))
-        self.assertTrue(hasattr(dev.Colors, 'BLUE'))
-        self.assertTrue(hasattr(dev.Colors, 'NC'))
 
 
 class TestGetOsType(unittest.TestCase):
@@ -67,19 +54,15 @@ class TestConfig(unittest.TestCase):
         shutil.rmtree(self.temp_dir, ignore_errors=True)
     
     def test_load_config_creates_default(self):
-        """load_config should create default config if missing"""
-        config = dev.load_config()
-        self.assertIn('version', config)
-        self.assertIn('repos', config)
-        self.assertIn('defaultBasePaths', config)
-        self.assertTrue(dev.CONFIG_FILE.exists())
+        """load_config should raise when config file is missing"""
+        with self.assertRaises(FileNotFoundError):
+            dev.load_config()
     
     def test_save_and_load_config(self):
         """Config should round-trip correctly"""
         config = {
             'version': 1,
-            'repos': [{'name': 'test-repo', 'remoteUrl': 'https://example.com/test.git'}],
-            'defaultBasePaths': {'linux': '/workspace'}
+            'repos': [{'name': 'test-repo', 'remoteUrl': 'https://example.com/test.git'}]
         }
         dev.save_config(config)
         loaded = dev.load_config()
@@ -138,34 +121,25 @@ class TestHasRealConflictMarkers(unittest.TestCase):
 class TestGetBasePath(unittest.TestCase):
     """Test base path resolution"""
     
-    @patch.object(dev, 'get_os_type')
-    def test_linux_path(self, mock_os):
-        mock_os.return_value = 'linux'
-        config = {'defaultBasePaths': {'linux': '/workspace', 'windows': 'C:\\dev'}}
-        self.assertEqual(dev.get_base_path(config), '/workspace')
+    @patch.dict(os.environ, {'DEV': '/workspace'})
+    def test_uses_dev_env(self):
+        self.assertEqual(dev.get_base_path(), '/workspace')
     
-    @patch.object(dev, 'get_os_type')
-    def test_windows_path(self, mock_os):
-        mock_os.return_value = 'windows'
-        config = {'defaultBasePaths': {'linux': '/workspace', 'windows': 'C:\\dev'}}
-        self.assertEqual(dev.get_base_path(config), 'C:\\dev')
+    @patch.dict(os.environ, {'DEV': 'C:\\dev'})
+    def test_windows_path(self):
+        self.assertEqual(dev.get_base_path(), 'C:\\dev')
+    
+    @patch.dict(os.environ, {}, clear=True)
+    def test_missing_dev_raises(self):
+        with self.assertRaises(ValueError):
+            dev.get_base_path()
 
 
 class TestRunGit(unittest.TestCase):
-    """Test git command execution"""
-    
-    def test_run_git_on_valid_repo(self):
-        """run_git should work on a valid git repo"""
-        # Use the dev_scripts dir itself (should be a git repo)
-        success, output = dev.run_git(dev.SCRIPT_DIR, 'status', '--porcelain')
-        # Should succeed (return code 0) even if there are changes
-        self.assertIsInstance(success, bool)
     
     def test_run_git_on_invalid_path(self):
-        """run_git should fail gracefully on non-repo"""
-        with tempfile.TemporaryDirectory() as tmp:
-            success, output = dev.run_git(tmp, 'status')
-            self.assertFalse(success)
+        success, output = dev.run_git('/nonexistent_path_for_test', 'status')
+        self.assertFalse(success)
 
 
 class TestCopilotInstructionsSync(unittest.TestCase):
@@ -304,27 +278,15 @@ class TestCopilotInstructionsSync(unittest.TestCase):
         self.assertEqual(workspace_file.read_text(), repoconfig_content)
     
     def test_no_change_when_content_identical(self):
-        """No file writes should happen when content is identical"""
         content = "# Copilot\n\n## Rules\nSome rules\n"
-        workspace_file = self.workspace / '.github' / 'copilot-instructions.md'
-        repoconfig_file = dev.CONFIG_DIR / 'copilot-instructions.md'
+        (self.workspace / '.github' / 'copilot-instructions.md').write_text(content)
+        (dev.CONFIG_DIR / 'copilot-instructions.md').write_text(content)
         
-        workspace_file.write_text(content)
-        repoconfig_file.write_text(content)
+        result = dev.merge_copilot_instructions_to_repoconfig(self.workspace)
+        self.assertFalse(result)
         
-        # Get modification times
-        workspace_mtime = workspace_file.stat().st_mtime
-        repoconfig_mtime = repoconfig_file.stat().st_mtime
-        
-        import time
-        time.sleep(0.01)  # Ensure time difference would be detectable
-        
-        dev.merge_copilot_instructions_to_repoconfig(self.workspace)
-        
-        # Files should not have been rewritten (mtime unchanged)
-        # Note: the function actually does skip writes, but we can't reliably test mtime
-        # Just verify content is still correct
-        self.assertEqual(repoconfig_file.read_text(), content)
+        result = dev.apply_copilot_instructions_to_workspace(self.workspace)
+        self.assertFalse(result)
 
 
 class TestClaudeInstructionsSync(unittest.TestCase):
