@@ -56,46 +56,10 @@
       ]
     },
     {
-      "name": "infra_base/infra",
-      "remoteUrl": "https://microsoft.visualstudio.com/Edge/_git/chromium.infra",
-      "addedFrom": "C:\\dev\\infra_base\\infra",
-      "addedAt": "2026-01-09T02:52:08.858017+00:00",
-      "skipOn": [
-        "win-nexus"
-      ]
-    },
-    {
-      "name": "infra_cr_base/infra",
-      "remoteUrl": "https://chromium.googlesource.com/infra/infra",
-      "addedFrom": "C:\\dev\\infra_cr_base\\infra",
-      "addedAt": "2026-01-09T02:52:09.128929+00:00",
-      "skipOn": [
-        "win-nexus"
-      ]
-    },
-    {
       "name": "edge/depot_tools",
       "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools",
       "addedFrom": "C:\\dev\\edge\\depot_tools",
       "addedAt": "2026-01-09T02:55:06.467239+00:00",
-      "skipOn": [
-        "win-nexus"
-      ]
-    },
-    {
-      "name": "edge/src",
-      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.src",
-      "addedFrom": "C:\\dev\\edge\\src",
-      "addedAt": "2026-01-09T02:55:42.284263+00:00",
-      "skipOn": [
-        "win-nexus"
-      ]
-    },
-    {
-      "name": "cr/src",
-      "remoteUrl": "https://chromium.googlesource.com/chromium/src.git",
-      "addedFrom": "C:\\dev\\cr\\src",
-      "addedAt": "2026-01-09T02:55:47.959999+00:00",
       "skipOn": [
         "win-nexus"
       ]
