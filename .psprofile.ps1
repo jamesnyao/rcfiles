@@ -87,9 +87,9 @@ try {
 $env:OLD_PATH = $env:PATH
 if ($env:COMPUTERNAME -eq "JAMYAO-DEVBOX") {
   $env:MachineType = "dev"
-  $env:Dev = "C:\dev"
-  $env:DownEnlistRoot = "C:\dev\edge"
-  $env:UpEnlistRoot = "C:\dev\cr"
+  $env:Dev = "D:\dev"
+  $env:DownEnlistRoot = "D:\dev\edge"
+  $env:UpEnlistRoot = "D:\dev\cr"
 }
 elseif ($env:COMPUTERNAME -eq "JAMYAO-SURFACE") {
   $env:MachineType = "dev"

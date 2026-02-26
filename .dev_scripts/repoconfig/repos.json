@@ -4,7 +4,7 @@
   "defaultBasePaths": {
     "linux-devbox": "/workspace",
     "mac-devbox": "/dev",
-    "win-devbox": "C:\\dev",
+    "win-devbox": "D:\\dev",
     "win-surface": "C:\\dev",
     "win-nexus": "D:\\dev",
     "wsl-surface": "/workspace"
@@ -77,7 +77,10 @@
       "name": "pump.ui",
       "remoteUrl": "https://dev.azure.com/microsoft/Edge/_git/edgeinternal.es.pump.ui",
       "addedFrom": "C:\\dev\\pump.ui",
-      "addedAt": "2026-02-06T01:02:14.743271+00:00"
+      "addedAt": "2026-02-06T01:02:14.743271+00:00",
+      "skipOn": [
+        "win-nexus"
+      ]
     }
   ]
 }
