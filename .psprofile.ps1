@@ -47,8 +47,8 @@ function prompt {
 }
 
 # Set PATH values
-if (-not ($env:PATH -like "*$env:USERPROFILE\.dev_scripts*")) {
-  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:PATH"
+if (-not ($env:PATH -like "*$env:USERPROFILE\dev_scripts*")) {
+  $env:PATH = "$env:USERPROFILE\dev_scripts;$env:PATH"
 }
 if (-not ($env:PATH -like "*$env:USERPROFILE\.local\bin*")) {
   $env:PATH = "$env:USERPROFILE\.local\bin;$env:PATH"
@@ -122,7 +122,7 @@ function Set-Upstream() {
   }
   # Set up depot_tools
   $env:DEPOT_TOOLS_PATH = "$env:UpEnlistRoot\depot_tools"
-  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
+  $env:PATH = "$env:USERPROFILE\dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   Set-Location "$env:UpEnlistRoot\src"
   Write-Output "Depot Tools set up for Edge Upstream"
 }
@@ -131,7 +131,7 @@ function Set-Internal() {
   if (![string]::IsNullOrEmpty($env:DownEnlistRoot)) {
     # Set up depot_tools
     $env:DEPOT_TOOLS_PATH = "$env:DownEnlistRoot\depot_tools"
-    $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
+    $env:PATH = "$env:USERPROFILE\dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   }
   Set-Location $env:Dev
 }
@@ -168,7 +168,7 @@ function Set-ProdRE() {
 
 function Set-Clean() {
   $env:DEPOT_TOOLS_PATH = "$env:Dev\edge\depot_tools"
-  $env:PATH = "$env:USERPROFILE\.dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
+  $env:PATH = "$env:USERPROFILE\dev_scripts;$env:DEPOT_TOOLS_PATH;$env:DEPOT_TOOLS_PATH\scripts;$env:OLD_PATH"
   $env:SISO_LIMITS = ""
   $env:SISO_PATH = ""
   $env:SISO_EXPERIMENTS = ""
@@ -178,7 +178,7 @@ function Set-Clean() {
 # Dev CLI
 function dev {
   if (Get-Command py -ErrorAction SilentlyContinue) {
-    py "$env:USERPROFILE\.dev_scripts\dev.py" @args
+    py "$env:USERPROFILE\dev_scripts\dev.py" @args
   } elseif ($args.Count -ge 1 -and $args[0] -eq 'python') {
     Write-Host "Python not found. Bootstrapping via winget..." -ForegroundColor Blue
     winget install Python.Python.3.12 --source winget --accept-package-agreements --accept-source-agreements

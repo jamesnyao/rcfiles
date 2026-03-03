@@ -25,6 +25,11 @@
 !dev_scripts/*
 !dev_scripts/repoconfig/
 !dev_scripts/repoconfig/*
+<<<<<<< HEAD
+=======
+!dev_scripts/repoconfig/rcfiles/
+!dev_scripts/repoconfig/rcfiles/**
+>>>>>>> 475353c (Rename .dev_scripts to dev_scripts, add tracked file sync)
 
 # Exclude sensitive files
 dev_scripts/repoconfig/ado_pat.txt

@@ -5,6 +5,17 @@
     {
       "name": "es",
       "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es",
+      "addedFrom": "C:\\dev\\es",
+      "addedAt": "2026-01-09T02:18:56.899259+00:00",
+      "skipOn": [
+        "win-nexus"
+      ]
+    },
+    {
+      "name": "releasebot",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es.releasebot",
+      "addedFrom": "C:\\dev\\releasebot",
+      "addedAt": "2026-01-09T02:18:57.136853+00:00",
       "skipOn": [
         "win-nexus"
       ]
@@ -12,21 +23,17 @@
     {
       "name": "sealion",
       "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es.sealion",
+      "addedFrom": "C:\\dev\\sealion",
+      "addedAt": "2026-01-09T02:18:57.197458+00:00",
       "skipOn": [
         "win-nexus"
       ]
     },
     {
-      "name": "releasebot",
-      "remoteUrl": "https://dev.azure.com/microsoft/Edge/_git/edgeinternal.es.releasebot",
-      "skipOn": [
-        "win-nexus",
-        "wsl-devbox"
-      ]
-    },
-    {
       "name": "chromium.infra.build",
       "remoteUrl": "https://chromium.googlesource.com/build",
+      "addedFrom": "C:\\dev\\chromium.infra.build",
+      "addedAt": "2026-01-09T02:50:11.594254+00:00",
       "skipOn": [
         "win-nexus"
       ]
@@ -34,6 +41,8 @@
     {
       "name": "es2",
       "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es",
+      "addedFrom": "C:\\dev\\es2",
+      "addedAt": "2026-01-09T02:50:32.234049+00:00",
       "skipOn": [
         "win-nexus"
       ]
@@ -41,6 +50,8 @@
     {
       "name": "edge/depot_tools",
       "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools",
+      "addedFrom": "C:\\dev\\edge\\depot_tools",
+      "addedAt": "2026-01-09T02:55:06.467239+00:00",
       "skipOn": [
         "win-nexus"
       ]
@@ -48,6 +59,8 @@
     {
       "name": "cr/depot_tools",
       "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools.cr-contrib",
+      "addedFrom": "C:\\dev\\cr\\depot_tools",
+      "addedAt": "2026-01-09T02:55:56.818160+00:00",
       "skipOn": [
         "win-nexus"
       ]
@@ -55,10 +68,10 @@
     {
       "name": "pump.ui",
       "remoteUrl": "https://dev.azure.com/microsoft/Edge/_git/edgeinternal.es.pump.ui",
+      "addedFrom": "C:\\dev\\pump.ui",
+      "addedAt": "2026-02-06T01:02:14.743271+00:00",
       "skipOn": [
-        "win-nexus",
-        "wsl-surface",
-        "wsl-devbox"
+        "win-nexus"
       ]
     }
   ]
