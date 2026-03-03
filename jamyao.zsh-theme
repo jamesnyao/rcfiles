@@ -1,4 +1,8 @@
-PROMPT="%F{2}%n-dev@$ZSH_THEME_PLATFORM%f %F{14}%~%f"
+if [[ "$(uname)" == "Linux" ]]; then
+  PROMPT="%F{13}%n-dev@$ZSH_THEME_PLATFORM%f %F{14}%~%f"
+else
+  PROMPT="%F{2}%n-dev@$ZSH_THEME_PLATFORM%f %F{14}%~%f"
+fi
 PROMPT+=' $(git_prompt_info)'
 PROMPT+='%(?:%{$reset_color%}:%{$fg[red]%})$ %{$reset_color%}'
 

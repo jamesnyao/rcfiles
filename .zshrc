@@ -6,7 +6,11 @@ export platform=$(uname | tr '[:upper:]' '[:lower:]')
 
 # Detect WSL and set display name
 if [[ "$platform" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
-  export ZSH_THEME_PLATFORM="surface-wsl"
+  if [[ "$HOST" == *devbox* ]]; then
+    export ZSH_THEME_PLATFORM="devbox"
+  else
+    export ZSH_THEME_PLATFORM="surface-wsl"
+  fi
 else
   export ZSH_THEME_PLATFORM="$platform"
 fi
@@ -116,7 +120,7 @@ source $ZSH/oh-my-zsh.sh
 
 platform=$(uname | tr '[:upper:]' '[:lower:]')
 if [[ "$platform" == "linux" ]]; then
-  PATH="/home/jamyao/.local/bin:/usr/local/go/bin:$PATH"
+  PATH="$HOME/.local/bin:/usr/local/go/bin:$PATH"
 
   zoxide --version > /dev/null
   if [ $? -eq 127 ]; then
@@ -124,7 +128,7 @@ if [[ "$platform" == "linux" ]]; then
   fi
   eval "$(zoxide init --cmd cd zsh)"
 
-  PATH="/home/jamyao/.fzf/bin/:$PATH"
+  PATH="$HOME/.fzf/bin/:$PATH"
   which fzf > /dev/null 2>&1
   if [ $? -ne 0 ]; then
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
@@ -136,8 +140,12 @@ fi
 # Detect WSL vs native Linux and set paths
 if [[ "$platform" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
   # WSL
-  export DEV="/workspace"
-  export DEVCONFIG="wsl-surface"
+  export DEV="$HOME/dev"
+  if [[ "$HOST" == *devbox* ]]; then
+    export DEVCONFIG="wsl-devbox"
+  else
+    export DEVCONFIG="wsl-surface"
+  fi
 elif [[ "$platform" == "linux" ]]; then
   # Native Linux devbox
   export DEV="/workspace"
@@ -163,13 +171,19 @@ PATH="$PATH1"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # Dev CLI
-source ~/.dev_scripts/aliases.sh
+source ~/dev_scripts/aliases.sh
 
 # Start in edge/src
-cd $DEV/edge/src 2>/dev/null || cd $DEV
+cd $DEV
+
+# BEGIN Agency MANAGED BLOCK
+if [[ ":${PATH}:" != *":/home/jamyao-wsl/.config/agency/CurrentVersion:"* ]]; then
+    export PATH="/home/jamyao-wsl/.config/agency/CurrentVersion:${PATH}"
+fi
+# END Agency MANAGED BLOCK
 
 # WSL-specific: Windows tools
 if grep -qi microsoft /proc/version 2>/dev/null; then
-  alias cop="copilot.exe --allow-all"
+  alias cop="agency copilot --allow-all"
   alias code="/mnt/c/Users/jamyao/AppData/Local/Programs/Microsoft\ VS\ Code/bin/code"
 fi
