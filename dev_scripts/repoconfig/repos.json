@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "description": "Tracked repositories for cross-machine sync",
+  "repos": [
+    {
+      "name": "es",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es",
+      "skipOn": [
+        "win-nexus"
+      ]
+    },
+    {
+      "name": "sealion",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es.sealion",
+      "skipOn": [
+        "win-nexus"
+      ]
+    },
+    {
+      "name": "releasebot",
+      "remoteUrl": "https://dev.azure.com/microsoft/Edge/_git/edgeinternal.es.releasebot",
+      "skipOn": [
+        "win-nexus",
+        "wsl-devbox"
+      ]
+    },
+    {
+      "name": "chromium.infra.build",
+      "remoteUrl": "https://chromium.googlesource.com/build",
+      "skipOn": [
+        "win-nexus"
+      ]
+    },
+    {
+      "name": "es2",
+      "remoteUrl": "https://microsoft@dev.azure.com/microsoft/Edge/_git/edgeinternal.es",
+      "skipOn": [
+        "win-nexus"
+      ]
+    },
+    {
+      "name": "edge/depot_tools",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools",
+      "skipOn": [
+        "win-nexus"
+      ]
+    },
+    {
+      "name": "cr/depot_tools",
+      "remoteUrl": "https://microsoft.visualstudio.com/DefaultCollection/Edge/_git/chromium.depot_tools.cr-contrib",
+      "skipOn": [
+        "win-nexus"
+      ]
+    },
+    {
+      "name": "pump.ui",
+      "remoteUrl": "https://dev.azure.com/microsoft/Edge/_git/edgeinternal.es.pump.ui",
+      "skipOn": [
+        "win-nexus",
+        "wsl-surface",
+        "wsl-devbox"
+      ]
+    }
+  ]
+}

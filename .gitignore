@@ -21,10 +21,10 @@
 !OneDrive - Microsoft/Documents/PowerShell/
 !OneDrive - Microsoft/Documents/PowerShell/Microsoft.PowerShell_profile.ps1
 
-!.dev_scripts/
-!.dev_scripts/*
-!.dev_scripts/repoconfig/
-!.dev_scripts/repoconfig/*
+!dev_scripts/
+!dev_scripts/*
+!dev_scripts/repoconfig/
+!dev_scripts/repoconfig/*
 
 # Exclude sensitive files
-.dev_scripts/repoconfig/ado_pat.txt
+dev_scripts/repoconfig/ado_pat.txt
