@@ -81,3 +81,5 @@ set_prod_re() {
 set_remote_only() {
   export SISO_EXPERIMENTS="no-fallback"
 }
+
+alias cls=clear
