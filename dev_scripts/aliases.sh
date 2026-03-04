@@ -2,7 +2,7 @@
 # Add this to your ~/.bashrc or ~/.zshrc:
 #   source ~/.dev_scripts/aliases.sh
 
-DEV_SCRIPTS="$HOME/.dev_scripts"
+DEV_SCRIPTS="$HOME/dev_scripts"
 export PATH="$DEV_SCRIPTS:$PATH"
 
 # Save original PATH for switching between enlistments

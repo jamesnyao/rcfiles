@@ -1,12 +1,12 @@
 # Dev CLI
 
-A cross-platform development workflow tool for managing repositories across machines. Located at `~/.dev_scripts/dev.py`.
+A cross-platform development workflow tool for managing repositories across machines. Located at `~/dev_scripts/dev.py`.
 
 ## Critical Rules
 
-**ALWAYS run tests after modifying `~/.dev_scripts/`.** If any file in the `~/.dev_scripts/` directory (including `dev.py`, `test_dev.py`, or any repoconfig files) is modified, you MUST run `python3 ~/.dev_scripts/test_dev.py` and ensure ALL tests pass before considering the change complete. This is non-negotiable.
+**ALWAYS run tests after modifying `~/dev_scripts/`.** If any file in the `~/dev_scripts/` directory (including `dev.py`, `test_dev.py`, or any repoconfig files) is modified, you MUST run `python3 ~/dev_scripts/test_dev.py` and ensure ALL tests pass before considering the change complete. This is non-negotiable.
 
-**ALWAYS validate fixes.** After making any fix, test and validate the change actually works. For `~/.dev_scripts/` changes: run `python3 ~/.dev_scripts/test_dev.py` (all tests must pass), then run `dev repo sync` to verify end-to-end behavior.
+**ALWAYS validate fixes.** After making any fix, test and validate the change actually works. For `~/dev_scripts/` changes: run `python3 ~/dev_scripts/test_dev.py` (all tests must pass), then run `dev repo sync` to verify end-to-end behavior.
 
 ## Code Cleanup Guidelines
 
@@ -27,7 +27,7 @@ Use `dev repo set-path <os> <path>` to customize.
 ## Dev Scripts Structure
 
 ```
-~/.dev_scripts/
+~/dev_scripts/
 ├── dev.py              # Main CLI (cross-platform)
 ├── dev                 # Linux launcher (bash)
 ├── test_dev.py         # Tests (run after ANY change)
@@ -77,7 +77,7 @@ dev repo set-path <os> <path>    # os: linux, darwin, windows
 
 ### Cross-Machine Sync
 
-The config is stored in `~/.dev_scripts/repoconfig/repos.json` and can be synced across machines. Running `dev repo sync` on a new machine will clone all tracked repos.
+The config is stored in `~/dev_scripts/repoconfig/repos.json` and can be synced across machines. Running `dev repo sync` on a new machine will clone all tracked repos.
 
 ## Python Management
 
@@ -94,7 +94,7 @@ On Windows uses winget, on macOS uses Homebrew, on Linux uses apt/dnf.
 
 Add to `~/.bashrc` or `~/.zshrc`:
 ```bash
-source ~/.dev_scripts/aliases.sh
+source ~/dev_scripts/aliases.sh
 ```
 
 Available commands after sourcing:
@@ -104,7 +104,7 @@ Available commands after sourcing:
 - `set-crdt` - Use cr/depot_tools (with python shim)
 - `reset-path` - Reset PATH to original
 
-The python shim (`~/.dev_scripts/python3`) skips depot_tools/scripts python and finds the real system python.
+The python shim (`~/dev_scripts/python3`) skips depot_tools/scripts python and finds the real system python.
 
 ### Windows (PowerShell)
 
@@ -114,4 +114,4 @@ Functions defined in `$PROFILE`:
 - `Set-Upstream` - Use cr\depot_tools (with python shim)
 - `Set-CrDT` - Use cr\depot_tools (with python shim)
 
-The python shim (`~/.dev_scripts/python3.cmd`) skips depot_tools\scripts and Windows Store stubs.
+The python shim (`~/dev_scripts/python3.cmd`) skips depot_tools\scripts and Windows Store stubs.
