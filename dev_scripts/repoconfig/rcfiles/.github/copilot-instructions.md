@@ -15,9 +15,9 @@ Review any deletions to this file - unless the information is no longer accurate
 **CONTINUOUSLY monitor a running build for errors - only interrupt if necessary.** 
 If building on Dev/Preprod, continuously monitor the build for errors by checking the terminal output every 30 seconds, if timeouts are detected and cause the build to fail, restart the build. If other errors are detected, make the appropriate changes to fix the errors and restart the build. Check for build logs in `edge/src/out/siso*`.
 
-**ALWAYS run tests after modifying `~/dev_scripts/`.** If any file in the `~/dev_scripts/` directory (including `dev.py`, `test_dev.py`, or any repoconfig files) is modified, you MUST run `python3 ~/dev_scripts/test_dev.py` and ensure ALL tests pass before considering the change complete. This is non-negotiable.
+**ALWAYS run tests after modifying `~/.dev_scripts/`.** If any file in the `~/.dev_scripts/` directory (including `dev.py`, `test_dev.py`, or any repoconfig files) is modified, you MUST run `python3 ~/.dev_scripts/test_dev.py` and ensure ALL tests pass before considering the change complete. This is non-negotiable.
 
-**ALWAYS validate fixes.** After making any fix, test and validate the change actually works. For `~/dev_scripts/` changes: run `python3 ~/dev_scripts/test_dev.py` (all tests must pass), then run `dev repo sync` to verify end-to-end behavior. For other fixes: run the relevant command, build, or test to confirm the fix works as expected.
+**ALWAYS validate fixes.** After making any fix, test and validate the change actually works. For `~/.dev_scripts/` changes: run `python3 ~/.dev_scripts/test_dev.py` (all tests must pass), then run `dev repo sync` to verify end-to-end behavior. For other fixes: run the relevant command, build, or test to confirm the fix works as expected.
 
 **ALWAYS check if code is cleaned up before pushing.** Before pushing any code changes, review the code to ensure it is clean and follows the Code Cleanup Guidelines below. If the code is not clean, clean up any issues specific to the feature branch before pushing.
 
@@ -500,15 +500,15 @@ reclient_cfg_dir = "//buildtools/reclient_cfgs/linux"
 | iOS entitlements | `edge/src/ios/chrome/*/entitlements/` |
 | Build flags | `edge/src/ios/build/chrome_build.gni` |
 | Azure resources | `es/RE/AzureTemplates/*.bicep` |
-| Dev CLI scripts | `~/dev_scripts/dev.py` |
-| Repo tracking config | `~/dev_scripts/repoconfig/repos.json` |
-| Copilot instructions sync | `~/dev_scripts/repoconfig/copilot-instructions.md` |
-| ADO PAT (PRs, builds, API) | `~/dev_scripts/repoconfig/ado_pat.txt` |
+| Dev CLI scripts | `~/.dev_scripts/dev.py` |
+| Repo tracking config | `~/.dev_scripts/repoconfig/repos.json` |
+| Copilot instructions sync | `~/.dev_scripts/repoconfig/copilot-instructions.md` |
+| ADO PAT (PRs, builds, API) | `~/.dev_scripts/repoconfig/ado_pat.txt` |
 
 ### Dev Scripts Structure
 
 ```
-~/dev_scripts/
+~/.dev_scripts/
 ├── dev.py              # Main CLI (cross-platform)
 ├── dev                 # Linux launcher (bash)
 ├── aliases.sh          # Linux/macOS shell functions
@@ -522,7 +522,7 @@ reclient_cfg_dir = "//buildtools/reclient_cfgs/linux"
 
 ### Azure DevOps PAT
 
-The file `~/dev_scripts/repoconfig/ado_pat.txt` stores an Azure DevOps Personal Access Token (PAT) used for authenticated ADO API requests including:
+The file `~/.dev_scripts/repoconfig/ado_pat.txt` stores an Azure DevOps Personal Access Token (PAT) used for authenticated ADO API requests including:
 - **Pull Requests** - Creating, querying, and managing PRs
 - **Build Logs** - Fetching build logs and pipeline results
 - **Other ADO Requests** - Work items, artifacts, and general ADO REST API calls
@@ -531,7 +531,7 @@ The file `~/dev_scripts/repoconfig/ado_pat.txt` stores an Azure DevOps Personal 
 
 ## Dev CLI (`dev` command)
 
-A cross-platform development workflow tool for managing repositories across machines. Located at `~/dev_scripts/dev.py`.
+A cross-platform development workflow tool for managing repositories across machines. Located at `~/.dev_scripts/dev.py`.
 
 ### Repository Management
 
@@ -583,7 +583,7 @@ dev repo set-path <os> <path>    # os: linux, darwin, windows
 
 ### Cross-Machine Sync
 
-The config is stored in `~/dev_scripts/repoconfig/repos.json` and can be synced across machines. Running `dev repo sync` on a new machine will clone all tracked repos.
+The config is stored in `~/.dev_scripts/repoconfig/repos.json` and can be synced across machines. Running `dev repo sync` on a new machine will clone all tracked repos.
 
 Default base paths by OS:
 - **Linux**: `/workspace`
@@ -607,7 +607,7 @@ On Windows uses winget, on macOS uses Homebrew, on Linux uses apt/dnf.
 
 Add to `~/.bashrc` or `~/.zshrc`:
 ```bash
-source ~/dev_scripts/aliases.sh
+source ~/.dev_scripts/aliases.sh
 ```
 
 Available commands after sourcing:
@@ -617,7 +617,7 @@ Available commands after sourcing:
 - `set-crdt` - Use cr/depot_tools (with python shim)
 - `reset-path` - Reset PATH to original
 
-The python shim (`~/dev_scripts/python3`) skips depot_tools/scripts python and finds the real system python.
+The python shim (`~/.dev_scripts/python3`) skips depot_tools/scripts python and finds the real system python.
 
 ### Windows (PowerShell)
 
@@ -627,5 +627,5 @@ Functions defined in `$PROFILE`:
 - `Set-Upstream` - Use cr\depot_tools (with python shim)
 - `Set-CrDT` - Use cr\depot_tools (with python shim)
 
-The python shim (`~/dev_scripts/python3.cmd`) skips depot_tools\scripts and Windows Store stubs.
+The python shim (`~/.dev_scripts/python3.cmd`) skips depot_tools\scripts and Windows Store stubs.
 
