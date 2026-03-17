@@ -9,6 +9,16 @@ description: >-
 
 Always aim for the smallest diff that correctly solves the problem.
 
+## Branching
+
+For new fixes or features, create a feature branch off the latest default branch before making changes:
+
+1. `git fetch origin`
+2. `git checkout -b user/<alias>/<short-description> origin/main` (or `origin/master`, whichever is default)
+3. Make changes and commit to this branch.
+
+If working on an existing feature branch, make sure it is caught up with the default branch before adding new commits.
+
 ## Principles
 
 - **Change only what's necessary.** Don't reformat, rename, or restructure code outside the scope of the fix.
@@ -31,3 +41,11 @@ Before committing, review the diff and ask:
 3. Did I accidentally include whitespace, formatting, or import-order changes?
 
 If the answer to 1 or 2 is no, trim the diff. If 3 is yes, revert the noise.
+
+## Pushing
+
+Never use `git push --force`. If the remote has diverged, rebase or merge locally and push normally.
+
+## Pull Requests
+
+After pushing, create a PR using the ADO CLI (`dev ado git`). Target the default branch from the feature branch. Include a short, meaningful description (a few sentences) explaining what the change does and why.
