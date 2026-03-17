@@ -48,4 +48,6 @@ Never use `git push --force`. If the remote has diverged, rebase or merge locall
 
 ## Pull Requests
 
-After pushing, create a PR using the ADO CLI (`dev ado git`). Target the default branch from the feature branch. Include a short, meaningful description (a few sentences) explaining what the change does and why.
+After pushing, create a PR via the ADO REST API. Target the default branch from the feature branch. Write a description proportional to the change — only include what the change does and why. A one-line fix needs a one-line description, not a paragraph. Avoid being verbose. Include links to relevant context (e.g. the failing build or issue that motivated the change) and paste the key error snippet that shows exactly why the fix is needed. Use the `investigating-ado` skill for API patterns.
+
+If a PR already exists for the branch, review the title and description after pushing. Fix any info that is now inaccurate or misleading given the latest changes.
