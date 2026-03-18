@@ -123,11 +123,8 @@ Functions defined in `$PROFILE`:
 
 The python shim (`~/dev_scripts/python3.cmd`) skips depot_tools\scripts and Windows Store stubs.
 
-## Azure DevOps PAT
+## Azure DevOps
 
-The file `~/dev_scripts/repoconfig/ado_pat.txt` stores an Azure DevOps Personal Access Token (PAT) used for authenticated ADO API requests including:
-- **Pull Requests** - Creating, querying, and managing PRs
-- **Build Logs** - Fetching build logs and pipeline results
-- **Other ADO Requests** - Work items, artifacts, and general ADO REST API calls
+For ADO operations (PRs, builds, work items), use the **edge-ado plugin skills** (`pr`, `pipeline`, `workitem`) which authenticate via `es login` or `az login`.
 
-**IMPORTANT: If the PAT is expired or returns authentication errors, or is missing, prompt the user to provide a new PAT and update the file.**
+The file `~/dev_scripts/repoconfig/ado_pat.txt` stores a PAT used by the dev CLI itself for ADO API calls. If the PAT is expired or missing, prompt the user to update it with `dev ado set-pat`.
