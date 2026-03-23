@@ -25,12 +25,8 @@ For each repo that has PRs to review:
 
 ### 2. Find active PRs via ADO REST API
 
-Use the edge-ado plugin scripts or call ADO REST API directly:
-```
-GET https://dev.azure.com/microsoft/Edge/_apis/git/repositories/{repo}/pullrequests?searchCriteria.status=active&api-version=7.1-preview
-```
-
-Auth: Use `_auth.get_token()` from `<edge-ado-plugin>/scripts/_auth.py` or the ADO PAT at `~/dev_scripts/repoconfig/ado_pat.txt`.
+Use the edge-ado plugin to get active PRs for each repo.
+Auth: Use `_auth.get_token()` from `<edge-ado-plugin>/scripts/_auth.py`.
 
 ### 3. Filter PRs
 Apply these filters (configurable by user):
@@ -54,9 +50,10 @@ git checkout <original_branch>
 
 ### 5. Review each diff
 Launch code-review agents in parallel for each PR diff. The review prompt should include:
-- PR metadata (ID, title, author, branch, URL)
+- PR metadata (ID, title, pr-description, author, branch, URL)
 - The diff content
-- Instructions to focus on bugs, security issues, logic errors only (no style/formatting nits)
+- Instructions to focus on if the approach is correct, and if so, to focus on bugs, security issues, logic errors
+- Suggest validation pipelines to run if the code looks good and the code should have a validation run against it
 
 ### 6. Compile results
 Write all reviews to a single local text file (e.g., `D:\dev\pr_reviews.txt`) with:
@@ -77,4 +74,4 @@ Remove diff files and temp JSON files.
 ## IMPORTANT
 - **Do NOT modify feature branches** — diffs are read-only from remote refs
 - **Do NOT post comments on the PR** — save reviews locally only
-- **Do NOT checkout branches** unless the user explicitly asks for local test/lint runs
+- **Do NOT checkout branches** unless the codebase specifies running tests/linter
