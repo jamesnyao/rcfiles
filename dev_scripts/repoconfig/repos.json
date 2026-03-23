@@ -77,7 +77,7 @@
     },
     {
       "name": "edge-agents",
-      "remoteUrl": "https://github.com/edge-microsoft/edge-agents.git",
+      "remoteUrl": "git@github.com-edge:edge-microsoft/edge-agents.git",
       "addedFrom": "D:\\dev\\edge-agents",
       "addedAt": "2026-03-18T00:15:00.797370+00:00"
     }

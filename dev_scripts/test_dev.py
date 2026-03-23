@@ -139,6 +139,45 @@ class TestGetBasePath(unittest.TestCase):
             dev.get_base_path()
 
 
+class TestNormalizeGithubUrl(unittest.TestCase):
+    """Test GitHub URL normalization to SSH with correct host aliases"""
+    
+    def test_https_personal_account(self):
+        """HTTPS URL for personal account should use github.com-personal"""
+        url = 'https://github.com/jamesnyao/rcfiles.git'
+        self.assertEqual(dev.normalize_github_url(url), 'git@github.com-personal:jamesnyao/rcfiles.git')
+    
+    def test_https_edge_org(self):
+        """HTTPS URL for edge-microsoft org should use github.com-edge"""
+        url = 'https://github.com/edge-microsoft/edge-agents.git'
+        self.assertEqual(dev.normalize_github_url(url), 'git@github.com-edge:edge-microsoft/edge-agents.git')
+    
+    def test_https_without_git_suffix(self):
+        """HTTPS URL without .git suffix should still work"""
+        url = 'https://github.com/jamesnyao/rcfiles'
+        self.assertEqual(dev.normalize_github_url(url), 'git@github.com-personal:jamesnyao/rcfiles.git')
+    
+    def test_ssh_personal_account(self):
+        """SSH URL with github.com should be converted to github.com-personal"""
+        url = 'git@github.com:jamesnyao/rcfiles.git'
+        self.assertEqual(dev.normalize_github_url(url), 'git@github.com-personal:jamesnyao/rcfiles.git')
+    
+    def test_ssh_edge_org(self):
+        """SSH URL with github.com should be converted to github.com-edge"""
+        url = 'git@github.com:edge-microsoft/edge-agents.git'
+        self.assertEqual(dev.normalize_github_url(url), 'git@github.com-edge:edge-microsoft/edge-agents.git')
+    
+    def test_unknown_org_uses_default_host(self):
+        """Unknown org should use plain github.com"""
+        url = 'https://github.com/unknown-org/some-repo.git'
+        self.assertEqual(dev.normalize_github_url(url), 'git@github.com:unknown-org/some-repo.git')
+    
+    def test_non_github_url_unchanged(self):
+        """Non-GitHub URLs should be returned unchanged"""
+        url = 'https://dev.azure.com/microsoft/Edge/_git/edgeinternal.es'
+        self.assertEqual(dev.normalize_github_url(url), url)
+
+
 class TestRunGit(unittest.TestCase):
     
     def test_run_git_on_invalid_path(self):
