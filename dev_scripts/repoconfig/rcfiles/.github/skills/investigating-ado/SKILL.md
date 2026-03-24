@@ -20,6 +20,44 @@ For most ADO operations, invoke the appropriate plugin skill:
 
 Invoke these skills directly — they contain full usage instructions for all supported operations.
 
+## Queueing Pipelines via REST API
+
+When queueing builds programmatically, use `templateParameters` (not `parameters`) to pass pipeline parameters:
+
+```powershell
+$azToken = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
+$headers = @{ 
+    Authorization = "Bearer $azToken"
+    "Content-Type" = "application/json"
+}
+
+$body = @{
+    definition = @{ id = <DEFINITION_ID> }
+    sourceBranch = "refs/heads/<BRANCH_NAME>"
+    templateParameters = @{
+        ParamName1 = "Value1"
+        ParamName2 = "Value2"
+    }
+} | ConvertTo-Json -Depth 5
+
+$response = Invoke-RestMethod -Uri "https://dev.azure.com/microsoft/Edge/_apis/build/builds?api-version=7.0" -Headers $headers -Method Post -Body $body
+Write-Host "Build: $($response.id) - $($response.buildNumber)"
+```
+
+**Always verify the queued build** — check that the build name/title reflects the expected parameters:
+
+```powershell
+# After queueing, verify the build
+$build = Invoke-RestMethod -Uri "https://dev.azure.com/microsoft/Edge/_apis/build/builds/$($response.id)?api-version=7.0" -Headers $headers
+Write-Host "Build name: $($build.buildNumber)"  # Should reflect your parameters
+Write-Host "Template parameters: $($build.templateParameters | ConvertTo-Json)"
+Write-Host "Source branch: $($build.sourceBranch)"
+```
+
+Common mistakes:
+- Using `parameters` instead of `templateParameters` — parameters won't be applied
+- The build name often includes parameter values (e.g., `MacWorker-Official-...` vs `MacWorker-Preprod-...`) — verify this matches your intent
+
 ## Siso build logs (autoninja failures)
 
 When an `autoninja` build step fails in a pipeline, the detailed build logs are published as a **siso-report** artifact. Use the `pipeline` skill to get the build ID, then download the artifact:
