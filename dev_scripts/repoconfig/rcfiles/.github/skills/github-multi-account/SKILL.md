@@ -1,3 +1,8 @@
+---
+name: github-multi-account
+description: GitHub multi-account SSH configuration for this workspace. Use when troubleshooting GitHub auth or setting up SSH keys.
+---
+
 # GitHub Multi-Account SSH Configuration
 
 This workspace uses multiple GitHub accounts with SSH host aliases for authentication.

@@ -1,3 +1,8 @@
+---
+name: creating-skills
+description: Guidelines for creating new Copilot skills in the workspace root. Use when creating or organizing skills.
+---
+
 # Creating New Skills
 
 When creating new Copilot skills, always place them in the workspace root:
