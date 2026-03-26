@@ -503,7 +503,6 @@ reclient_cfg_dir = "//buildtools/reclient_cfgs/linux"
 | Dev CLI scripts | `~/.dev_scripts/dev.py` |
 | Repo tracking config | `~/.dev_scripts/repoconfig/repos.json` |
 | Copilot instructions sync | `~/.dev_scripts/repoconfig/copilot-instructions.md` |
-| ADO PAT (PRs, builds, API) | `~/.dev_scripts/repoconfig/ado_pat.txt` |
 
 ### Dev Scripts Structure
 
@@ -516,20 +515,10 @@ reclient_cfg_dir = "//buildtools/reclient_cfgs/linux"
 ├── python3.cmd         # Windows python shim (batch)
 └── repoconfig/
     ├── repos.json              # Tracked repos config
-    ├── copilot-instructions.md # Synced copilot instructions
-    └── ado_pat.txt             # Azure DevOps Personal Access Token
+    └── copilot-instructions.md # Synced copilot instructions
 ```
 
-### Azure DevOps PAT
-
-The file `~/.dev_scripts/repoconfig/ado_pat.txt` stores an Azure DevOps Personal Access Token (PAT) used for authenticated ADO API requests including:
-- **Pull Requests** - Creating, querying, and managing PRs
-- **Build Logs** - Fetching build logs and pipeline results
-- **Other ADO Requests** - Work items, artifacts, and general ADO REST API calls
-
-**IMPORTANT: If the PAT is expired or returns authentication errors, or is missing, prompt the user to provide a new PAT and update the file.**
-
-## Dev CLI (`dev` command)
+## Dev CLI(`dev` command)
 
 A cross-platform development workflow tool for managing repositories across machines. Located at `~/.dev_scripts/dev.py`.
 
